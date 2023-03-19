@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>boajr</Authors>
+    <Copyright>Copyright © Piero Boato 2023</Copyright>
+    <PackageProjectUrl>https://github.com/boajr/Identity</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/boajr/Identity</RepositoryUrl>
+    <Description>Boa.Extensions.Identity.Telegram provider that uses Entity Framework Core.</Description>
+    <PackageTags>AspNetCore;EntityFrameworkCore;Identity;Telegram</PackageTags>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Extensions.Telegram\Boa.Extensions.Identity.Telegram.csproj" />
+  </ItemGroup>
+
+</Project>

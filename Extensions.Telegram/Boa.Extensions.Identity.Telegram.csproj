@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>boajr</Authors>
+    <Copyright>Copyright © Piero Boato 2023</Copyright>
+    <PackageProjectUrl>https://github.com/boajr/Identity</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/boajr/Identity</RepositoryUrl>
+    <Description>Boa.Extensions.Identity.Telegram implements the interfaces added by Boa.Extensions.Identity.Core using Telegram to comunicate with users.</Description>
+    <PackageTags>AspNetCore;Identity;Telegram</PackageTags>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Boa.TelegramBotService" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Extensions.Core\Boa.Extensions.Identity.Core.csproj" />
+  </ItemGroup>
+
+</Project>
