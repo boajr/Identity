@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <summary>
 /// Default UI extensions to <see cref="IdentityBuilder"/>.
 /// </summary>
-public static class IdentityBuilderUIExtensions
+public static class IdentityBuilderUIExtensions_BOA
 {
     /// <summary>
     /// Adds a default, self-contained UI for Identity to the application using
@@ -44,7 +44,7 @@ public static class IdentityBuilderUIExtensions
                     framework = default;
                 }
 
-                var parts = new ConsolidatedAssemblyApplicationPartFactory().GetApplicationParts(typeof(IdentityBuilderUIExtensions).Assembly);
+                var parts = new ConsolidatedAssemblyApplicationPartFactory().GetApplicationParts(typeof(IdentityBuilderUIExtensions_BOA).Assembly);
                 foreach (var part in parts)
                 {
                     apm.ApplicationParts.Add(part);
@@ -145,7 +145,7 @@ public static class IdentityBuilderUIExtensions
         }
 
         private static bool IsIdentityUIView(CompiledViewDescriptor desc) => desc.RelativePath.StartsWith("/Areas/Identity", StringComparison.OrdinalIgnoreCase) &&
-            desc.Type?.Assembly == typeof(IdentityBuilderUIExtensions).Assembly;
+            desc.Type?.Assembly == typeof(IdentityBuilderUIExtensions_BOA).Assembly;
     }
 
     /// <summary>
