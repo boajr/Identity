@@ -1,6 +1,6 @@
 namespace Boa.Identity.UI;
 
-public enum BoaUIFramework
+public enum UIFramework
 {
     // The default framework for a given release must be 0.
     // So this needs to be updated in the future if we include more frameworks.

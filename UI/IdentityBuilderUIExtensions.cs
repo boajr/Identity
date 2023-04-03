@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <summary>
 /// Default UI extensions to <see cref="IdentityBuilder"/>.
 /// </summary>
-public static class BoaIdentityBuilderUIExtensions
+public static class IdentityBuilderUIExtensions
 {
     /// <summary>
     /// Adds a default, self-contained UI for Identity to the application using
@@ -44,7 +44,7 @@ public static class BoaIdentityBuilderUIExtensions
                     framework = default;
                 }
 
-                var parts = new ConsolidatedAssemblyApplicationPartFactory().GetApplicationParts(typeof(BoaIdentityBuilderUIExtensions).Assembly);
+                var parts = new ConsolidatedAssemblyApplicationPartFactory().GetApplicationParts(typeof(IdentityBuilderUIExtensions).Assembly);
                 foreach (var part in parts)
                 {
                     apm.ApplicationParts.Add(part);
@@ -52,10 +52,6 @@ public static class BoaIdentityBuilderUIExtensions
 
                 apm.FeatureProviders.Add(new ViewVersionFeatureProvider(framework));
             });
-
-        builder.Services.ConfigureOptions(
-            typeof(BoaIdentityDefaultUIConfigureOptions<>)
-                .MakeGenericType(builder.UserType));
 
         return builder;
     }
@@ -75,7 +71,7 @@ public static class BoaIdentityBuilderUIExtensions
         return appAssembly;
     }
 
-    private static bool TryResolveUIFramework(Assembly? assembly, out BoaUIFramework uiFramework)
+    private static bool TryResolveUIFramework(Assembly? assembly, out UIFramework uiFramework)
     {
         uiFramework = default;
 
@@ -89,7 +85,7 @@ public static class BoaIdentityBuilderUIExtensions
         // If we find the metadata there must be a valid framework here.
         if (!Enum.TryParse(metadata, ignoreCase: true, out uiFramework))
         {
-            var enumValues = string.Join(", ", Enum.GetNames(typeof(BoaUIFramework)).Select(v => $"'{v}'"));
+            var enumValues = string.Join(", ", Enum.GetNames(typeof(UIFramework)).Select(v => $"'{v}'"));
             throw new InvalidOperationException(
                 $"Found an invalid value for the 'IdentityUIFrameworkVersion'. Valid values are {enumValues}");
         }
@@ -99,9 +95,9 @@ public static class BoaIdentityBuilderUIExtensions
 
     internal sealed class ViewVersionFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
     {
-        private readonly BoaUIFramework _framework;
+        private readonly UIFramework _framework;
 
-        public ViewVersionFeatureProvider(BoaUIFramework framework) => _framework = framework;
+        public ViewVersionFeatureProvider(UIFramework framework) => _framework = framework;
 
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewsFeature feature)
         {
@@ -112,7 +108,7 @@ public static class BoaIdentityBuilderUIExtensions
                 {
                     switch (_framework)
                     {
-                        case BoaUIFramework.Bootstrap4:
+                        case UIFramework.Bootstrap4:
                             if (descriptor.Type?.FullName?.Contains("V5", StringComparison.Ordinal) is true)
                             {
                                 // Remove V5 views
@@ -124,7 +120,7 @@ public static class BoaIdentityBuilderUIExtensions
                                 descriptor.RelativePath = descriptor.RelativePath.Replace("V4/", "");
                             }
                             break;
-                        case BoaUIFramework.Bootstrap5:
+                        case UIFramework.Bootstrap5:
                             if (descriptor.Type?.FullName?.Contains("V4", StringComparison.Ordinal) is true)
                             {
                                 // Remove V4 views
@@ -149,7 +145,7 @@ public static class BoaIdentityBuilderUIExtensions
         }
 
         private static bool IsIdentityUIView(CompiledViewDescriptor desc) => desc.RelativePath.StartsWith("/Areas/Identity", StringComparison.OrdinalIgnoreCase) &&
-            desc.Type?.Assembly == typeof(BoaIdentityBuilderUIExtensions).Assembly;
+            desc.Type?.Assembly == typeof(IdentityBuilderUIExtensions).Assembly;
     }
 
     /// <summary>

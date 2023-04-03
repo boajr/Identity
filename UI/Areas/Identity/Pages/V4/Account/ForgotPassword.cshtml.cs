@@ -11,9 +11,10 @@ namespace Boa.Identity.UI.V4.Pages.Account.Internal;
 ///     directly from your code. This API may change or be removed in future releases.
 /// </summary>
 [AllowAnonymous]
-[BoaIdentityDefaultUI(typeof(BoaForgotPasswordModel<>))]
-public abstract class BoaForgotPasswordModel : PageModel
+public class BoaForgotPasswordModel : PageModel
 {
+    private readonly IEnumerable<IResetPasswordService> _resetPasswordServices;
+
     /// <summary>
     ///     This API supports the Boa Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
@@ -51,20 +52,17 @@ public abstract class BoaForgotPasswordModel : PageModel
     ///     This API supports the Boa Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
-}
-
-internal sealed class BoaForgotPasswordModel<TUser> : BoaForgotPasswordModel where TUser : class
-{
-    private readonly IEnumerable<IResetPasswordService> _resetPasswordServices;
-
     public BoaForgotPasswordModel(IEnumerable<IResetPasswordService> resetPasswordServices)
     {
         _resetPasswordServices = resetPasswordServices;
         Message = resetPasswordServices.Count() == 1 ? _resetPasswordServices.First().RequestMessage : "Chose method and enter your data";
     }
 
-    public override async Task<IActionResult> OnPostAsync()
+    /// <summary>
+    ///     This API supports the Boa Identity default UI infrastructure and is not intended to be used
+    ///     directly from your code. This API may change or be removed in future releases.
+    /// </summary>
+    public async Task<IActionResult> OnPostAsync()
     {
         if (ModelState.IsValid)
         {

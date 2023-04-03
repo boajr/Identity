@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.CodeAnalysis;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -19,7 +18,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
     private readonly IEnumerable<IResetPasswordService> _resetPasswordServices;
 
     [HtmlAttributeName("bootstrap")]
-    public BoaUIFramework Bootstrap { get; set; } = BoaUIFramework.Bootstrap5;
+    public UIFramework Bootstrap { get; set; } = UIFramework.Bootstrap5;
 
     /// <summary>
     /// Gets the <see cref="Rendering.ViewContext"/> of the executing view.
@@ -229,7 +228,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
     private async Task AppendCheckboxElement(ModelExpression model, string group, bool visible, TagHelperContext context, TagHelperOutput output)
     {
-        if (Bootstrap == BoaUIFramework.Bootstrap4)
+        if (Bootstrap == UIFramework.Bootstrap4)
         {
             // aggiunge il div principale
             output.Content.AppendHtml(Environment.NewLine);
@@ -303,7 +302,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
         //    inputAttrs.Add(new TagHelperAttribute("aria-required", "true"));
         //}
 
-        if (Bootstrap == BoaUIFramework.Bootstrap4)
+        if (Bootstrap == UIFramework.Bootstrap4)
         {
             // aggiunge il div principale
             output.Content.AppendHtml(Environment.NewLine);
@@ -363,7 +362,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
             new TagHelperAttribute("asp-for", model)
         };
 
-        if (Bootstrap == BoaUIFramework.Bootstrap4)
+        if (Bootstrap == UIFramework.Bootstrap4)
         {
             // aggiunge il div principale
             output.Content.AppendHtml(Environment.NewLine);

@@ -5,7 +5,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Default UI extensions to <see cref="IServiceCollection"/>.
 /// </summary>
-public static class BoaIdentityServiceCollectionUIExtensions
+public static class IdentityServiceCollectionUIExtensions
 {
     /// <summary>
     /// Adds a set of common identity services to the application, including a default UI, token providers,
