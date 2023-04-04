@@ -54,7 +54,7 @@ public static class IdentityBuilderUIExtensions_BOA
                 apm.FeatureProviders.Add(new ViewVersionFeatureProvider(framework));
 
                 // configure TagHelper Bootstrap version
-                ResetPasswordServicesTagHelper.Bootstrap = framework;
+                ResetPasswordServicesTagHelper.Framework = framework;
             });
 
         return builder;

@@ -13,7 +13,7 @@ namespace Boa.Identity.UI.TagHelpers;
 [HtmlTargetElement("resetpasswordservices")]
 public class ResetPasswordServicesTagHelper : TagHelper
 {
-    internal static UIFramework Bootstrap { get; set; } = UIFramework.Bootstrap5;
+    internal static UIFramework Framework { get; set; } = UIFramework.Bootstrap5;
 
     private readonly IHtmlGenerator _htmlGenerator;
     private readonly IModelMetadataProvider _metadataProvider;
@@ -227,7 +227,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
     private async Task AppendCheckboxElement(ModelExpression model, string group, bool visible, TagHelperContext context, TagHelperOutput output)
     {
-        if (Bootstrap == UIFramework.Bootstrap4)
+        if (Framework == UIFramework.Bootstrap4)
         {
             // aggiunge il div principale
             output.Content.AppendHtml(Environment.NewLine);
@@ -301,7 +301,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
         //    inputAttrs.Add(new TagHelperAttribute("aria-required", "true"));
         //}
 
-        if (Bootstrap == UIFramework.Bootstrap4)
+        if (Framework == UIFramework.Bootstrap4)
         {
             // aggiunge il div principale
             output.Content.AppendHtml(Environment.NewLine);
@@ -361,7 +361,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
             new TagHelperAttribute("asp-for", model)
         };
 
-        if (Bootstrap == UIFramework.Bootstrap4)
+        if (Framework == UIFramework.Bootstrap4)
         {
             // aggiunge il div principale
             output.Content.AppendHtml(Environment.NewLine);
