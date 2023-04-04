@@ -1,5 +1,6 @@
 using Boa.Identity.UI;
 using Boa.Identity.UI.Areas.Identity.Services;
+using Boa.Identity.UI.TagHelpers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -51,6 +52,9 @@ public static class IdentityBuilderUIExtensions_BOA
                 }
 
                 apm.FeatureProviders.Add(new ViewVersionFeatureProvider(framework));
+
+                // configure TagHelper Bootstrap version
+                ResetPasswordServicesTagHelper.Bootstrap = framework;
             });
 
         return builder;

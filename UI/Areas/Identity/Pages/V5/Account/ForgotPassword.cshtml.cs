@@ -11,7 +11,7 @@ namespace Boa.Identity.UI.V5.Pages.Account.Internal;
 ///     directly from your code. This API may change or be removed in future releases.
 /// </summary>
 [AllowAnonymous]
-internal class BoaForgotPasswordModel : PageModel
+public class BoaForgotPasswordModel : PageModel
 {
     private readonly IEnumerable<IResetPasswordService> _resetPasswordServices;
 

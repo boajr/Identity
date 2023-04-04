@@ -13,12 +13,11 @@ namespace Boa.Identity.UI.TagHelpers;
 [HtmlTargetElement("resetpasswordservices")]
 public class ResetPasswordServicesTagHelper : TagHelper
 {
+    internal static UIFramework Bootstrap { get; set; } = UIFramework.Bootstrap5;
+
     private readonly IHtmlGenerator _htmlGenerator;
     private readonly IModelMetadataProvider _metadataProvider;
     private readonly IEnumerable<IResetPasswordService> _resetPasswordServices;
-
-    [HtmlAttributeName("bootstrap")]
-    public UIFramework Bootstrap { get; set; } = UIFramework.Bootstrap5;
 
     /// <summary>
     /// Gets the <see cref="Rendering.ViewContext"/> of the executing view.
