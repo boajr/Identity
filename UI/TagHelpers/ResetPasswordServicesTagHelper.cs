@@ -326,12 +326,6 @@ public class ResetPasswordServicesTagHelper : TagHelper
             return;
         }
 
-        // visto che l'attributo placeholder va aggiunto solo per il bootstrap 5 verifico qui se serve
-        if (annotations != null && annotations.Placeholder != null)
-        {
-            inputAttrs.Add(new TagHelperAttribute("placeholder", annotations.Placeholder));
-        }
-
         // aggiunge il div principale
         output.Content.AppendHtml(Environment.NewLine);
         AppendDivOpenTag("form-floating mb-3", group, visible, output);

@@ -16,7 +16,7 @@ public sealed class ResetPasswordServiceEmailDataModel
     /// Email address of user that request password reset.
     /// </summary>
     [EmailAddress]
-    [ResetPasswordAnnotations(Placeholder = "name@example.com")]
+    [Display(Prompt = "name@example.com")]
     public string Email { get; set; } = default!;
 }
 

@@ -9,8 +9,7 @@ namespace Boa.Identity.Telegram;
 internal sealed class ResetPasswordServiceTelegramDataModel
 {
     [Phone]
-    [Display(Name = "Phone Number")]
-    [ResetPasswordAnnotations(Placeholder = "+393xxyyyyyyy")]
+    [Display(Name = "Phone Number", Prompt = "+393xxyyyyyyy")]
     public string PhoneNumber { get; set; } = default!;
 }
 

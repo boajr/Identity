@@ -14,29 +14,6 @@ public sealed class ResetPasswordAnnotationsAttribute : Attribute
     /// </value>
     public string? Autocomplete { get; set; }
 
-
-
-    /// <summary>
-    /// Gets or sets the Placeholder attribute property, which may be a resource key string.
-    /// <para>
-    /// Consumers must use the <see cref="GetPlaceholder"/> method to retrieve the UI display string.
-    /// </para>
-    /// </summary>
-    /// <remarks>
-    /// The property contains either the literal, non-localized string or the resource key
-    /// to be used in conjunction with <see cref="ResourceType"/> to configure a localized
-    /// name for display.
-    /// <para>
-    /// The <see cref="GetPlaceholder"/> method will return either the literal, non-localized
-    /// string or the localized string when <see cref="ResourceType"/> has been specified.
-    /// </para>
-    /// </remarks>
-    /// <value>
-    /// The placeolder is generally used as the attribute placeholder of html input tag.
-    /// A <c>null</c> or empty string is legal, and consumers must allow for that.
-    /// </value>
-    public string? Placeholder { get; set; }
-
     #endregion
 
 
