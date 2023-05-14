@@ -1,5 +1,5 @@
 using Boa.Identity.UI;
-using Boa.Identity.UI.Areas.Identity.Services;
+using Boa.Identity.UI.Services;
 using Boa.Identity.UI.TagHelpers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI;

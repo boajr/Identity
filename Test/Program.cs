@@ -8,6 +8,8 @@ using Test.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 var botToken = builder.Configuration.GetValue<string>("Telegram:BotToken")
                ?? throw new Exception("'Telegram:BotToken' string not found.");
 builder.Services.AddTelegramBot(options =>

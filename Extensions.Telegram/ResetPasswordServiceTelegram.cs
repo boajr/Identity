@@ -27,10 +27,11 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
 
     public sealed override string ConfirmationMessage => "Please check your telegram conversations to reset your password";
 
-    public ResetPasswordServiceTelegram(IObjectModelValidator modelValidator,
+    public ResetPasswordServiceTelegram(IServiceProvider serviceProvider,
+                                        IObjectModelValidator modelValidator,
                                         IUserStore<TUser> userStore,
                                         Boa.TelegramBotService.TelegramBotService botClient)
-        : base(modelValidator)
+        : base(serviceProvider, modelValidator)
     {
         if (userStore == null)
         {
@@ -69,7 +70,7 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
 
         await _botClient.SendTextMessageAsync(
             chatId: telegramId,
-            text: "Reply to this message with new password",
+            text: Localizer["Reply to this message with new password"],
             replyMarkup: new ForceReplyMarkup()
         );
 

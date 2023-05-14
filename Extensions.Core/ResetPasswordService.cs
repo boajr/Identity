@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
+using System.Globalization;
+using System.Reflection;
 
 namespace Boa.Identity;
 
@@ -14,6 +18,43 @@ namespace Boa.Identity;
 public abstract class ResetPasswordService<TDataModel> : IResetPasswordService
     where TDataModel : class
 {
+    private class DummyStringLocalizer : IStringLocalizer
+    {
+        public LocalizedString this[string name]
+        {
+            get
+            {
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+
+                return new LocalizedString(name, name, false);
+            }
+        }
+
+        public LocalizedString this[string name, params object[] arguments]
+        {
+            get
+            {
+                if (name == null)
+                {
+                    throw new ArgumentNullException(nameof(name));
+                }
+
+                return new LocalizedString(name, string.Format(CultureInfo.CurrentCulture, name, arguments), false);
+            }
+        }
+
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
+        {
+            return Enumerable.Empty<LocalizedString>();
+        }
+    }
+
+
+
+    private readonly IServiceProvider _serviceProvider;
     protected readonly IObjectModelValidator ModelValidator;
     private ActionContext _context = default!;
 
@@ -37,6 +78,28 @@ public abstract class ResetPasswordService<TDataModel> : IResetPasswordService
     /// </summary>
     protected RouteData RouteData { get { return _context.RouteData; } }
 
+    /// <summary>
+    /// Gets the <see cref="Microsoft.Extensions.Localization.IStringLocalizer"/> for localized strings.
+    /// </summary>
+    protected IStringLocalizer Localizer
+    {
+        get
+        {
+            if (_localizer == null)
+            {
+                string? assemblyName = Assembly.GetEntryAssembly()?.GetName().Name;
+                if (assemblyName != null)
+                {
+                    string typeName = GetType().ToString();
+                    _localizer = _serviceProvider.GetService<IStringLocalizerFactory>()?.Create(typeName.Remove(typeName.IndexOf('`')), assemblyName);
+                }
+                _localizer ??= new DummyStringLocalizer();
+            }
+            return _localizer;
+        }
+    }
+    private IStringLocalizer? _localizer;
+
     /// <inheritdoc />
     public abstract string ServiceName { get; }
 
@@ -54,8 +117,9 @@ public abstract class ResetPasswordService<TDataModel> : IResetPasswordService
     /// </summary>
     /// <param name="modelValidator">The <see cref="IObjectModelValidator"/> used for validating the
     /// <see cref="TDataModel"/> object.</param>
-    public ResetPasswordService(IObjectModelValidator modelValidator)
+    public ResetPasswordService(IServiceProvider serviceProvider, IObjectModelValidator modelValidator)
     {
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         ModelValidator = modelValidator ?? throw new ArgumentNullException(nameof(modelValidator));
     }
 

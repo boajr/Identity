@@ -25,9 +25,10 @@ public sealed class ResetPasswordServiceEmailDataModel
 /// </summary>
 public abstract class ResetPasswordServiceEmail : ResetPasswordServiceEmail<IdentityUser>
 {
-    public ResetPasswordServiceEmail(IObjectModelValidator modelValidator,
+    public ResetPasswordServiceEmail(IServiceProvider serviceProvider,
+                                     IObjectModelValidator modelValidator,
                                      UserManager<IdentityUser> userManager)
-        : base(modelValidator, userManager)
+        : base(serviceProvider, modelValidator, userManager)
     { }
 }
 
@@ -57,8 +58,10 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
     /// <param name="modelValidator">The <see cref="IObjectModelValidator"/> used for validating the
     /// <see cref="ResetPasswordServiceEmailDataModel"/> object.</param>
     /// <param name="userManager">The <see cref="UserManager{TUser}"/> to retrieve user properties from.</param>
-    public ResetPasswordServiceEmail(IObjectModelValidator modelValidator, UserManager<TUser> userManager)
-        : base(modelValidator)
+    public ResetPasswordServiceEmail(IServiceProvider serviceProvider,
+                                     IObjectModelValidator modelValidator,
+                                     UserManager<TUser> userManager)
+        : base(serviceProvider, modelValidator)
     {
         _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
     }
@@ -74,7 +77,8 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
     /// </returns>
     protected sealed override async Task<bool> ProcessAsync(ResetPasswordServiceEmailDataModel data)
     {
-        if (!ModelState.IsValid) { 
+        if (!ModelState.IsValid)
+        {
             return false;
         }
 
@@ -93,8 +97,8 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
 
         await SendEmailAsync(
             data.Email,
-            "Reset Password",
-            $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+            Localizer["Reset Password"],
+            Localizer["Please reset your password by <a href='{0}'>clicking here</a>.", HtmlEncoder.Default.Encode(callbackUrl)]);
 
         return true;
     }

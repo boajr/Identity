@@ -3,17 +3,18 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace Boa.Identity.UI.Areas.Identity.Services
+namespace Boa.Identity.UI.Services
 {
     internal sealed class ResetPasswordServiceDefaultUIEmail<TUser> : ResetPasswordServiceEmail<TUser>
         where TUser : class
     {
         private readonly IEmailSender _emailSender;
 
-        public ResetPasswordServiceDefaultUIEmail(IObjectModelValidator modelValidator, 
+        public ResetPasswordServiceDefaultUIEmail(IServiceProvider serviceProvider,
+                                                  IObjectModelValidator modelValidator,
                                                   UserManager<TUser> userManager,
                                                   IEmailSender emailSender)
-            : base(modelValidator, userManager)
+            : base(serviceProvider, modelValidator, userManager)
         {
             _emailSender = emailSender;
         }
