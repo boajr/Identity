@@ -70,7 +70,7 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
 
         await _botClient.SendTextMessageAsync(
             chatId: telegramId,
-            text: Localizer["Reply to this message with new password"],
+            text: "[RESETPWD] " + Localizer["Reply to this message with new password"],
             replyMarkup: new ForceReplyMarkup()
         );
 

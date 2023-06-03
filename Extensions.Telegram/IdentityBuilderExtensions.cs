@@ -28,7 +28,7 @@ public static class IdentityBuilderExtensions
         }
 
         builder.AddBoaResetPasswordService(typeof(ResetPasswordServiceTelegram<>).MakeGenericType(builder.UserType));
-        builder.Services.TryAddSingleton<ITelegramBotHandler, TelegramBotHandler>();
+        builder.Services.TryAddScoped(typeof(ITelegramBotHandler), typeof(TelegramBotHandler<>).MakeGenericType(builder.UserType));
         return builder;
     }
 

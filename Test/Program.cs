@@ -27,7 +27,7 @@ builder.Services.AddBoaIdentity<IdentityTelegramUser>(options => options.SignIn.
     .AddBoaResetPasswordServiceTelegram();
 builder.Services.AddRazorPages();
 
-builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();  // forse va bene anche scoped o singleton???
 
 var app = builder.Build();
 
