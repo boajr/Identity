@@ -49,6 +49,8 @@ public static class IdentityServiceCollectionUIExtensions
         })
             .AddBoaUI()
             .AddDefaultUI()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddErrorDescriber<Boa.Identity.IdentityErrorDescriber>();
+        ;
     }
 }
