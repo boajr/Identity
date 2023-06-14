@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/boajr/Identity</RepositoryUrl>
     <Description>
 Boa.Extensions.Identity.Core extends the ASP.NET Core Identity framework adding:
-1. An interface to manage multiple reset password methods
+1. An interface to manage multiple password reset methods
 2...
     </Description>
     <PackageTags>AspNetCore;Identity</PackageTags>
