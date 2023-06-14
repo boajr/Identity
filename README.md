@@ -2,7 +2,7 @@
 
 Boa Identity extends ASP.NET Core Identity allowing:
 
-* the addition of new reset password methods by implementing the `IResetPasswordService` interface.
+* the addition of new password reset methods by implementing the `IResetPasswordService` interface.
 * the use of a [telegram bot](https://telegram.org/) to interact with users.
 
 ## Description
