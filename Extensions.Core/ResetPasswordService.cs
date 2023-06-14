@@ -92,7 +92,7 @@ public abstract class ResetPasswordService<TDataModel> : IResetPasswordService
             prefix: prefix + ServiceName,
             model: model);
 
-        return await ProcessAsync(model);
+        return await ProcessAsync(model).ConfigureAwait(false);
     }
 
     /// <summary>

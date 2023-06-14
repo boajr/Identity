@@ -54,14 +54,14 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
             return false;
         }
 
-        TUser? user = await _userStore.FindByPhoneNumberAsync(data.PhoneNumber, default);
+        TUser? user = await _userStore.FindByPhoneNumberAsync(data.PhoneNumber, default).ConfigureAwait(false);
         if (user == null)
         {
             // Don't reveal that the user does not exist
             return true;
         }
 
-        long? telegramId = await _userStore.GetTelegramIdAsync(user, default);
+        long? telegramId = await _userStore.GetTelegramIdAsync(user, default).ConfigureAwait(false);
         if (telegramId == null)
         {
             // Don't reveal that the user does not exist
@@ -72,7 +72,7 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
             chatId: telegramId,
             text: "[RESETPWD] " + Localizer["Reply to this message with new password"],
             replyMarkup: new ForceReplyMarkup()
-        );
+        ).ConfigureAwait(false);
 
         return true;
     }

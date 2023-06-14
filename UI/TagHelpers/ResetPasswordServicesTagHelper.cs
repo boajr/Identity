@@ -84,7 +84,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
                 items.Add(new SelectListItem(service.ServiceName, service.ServiceName, service.ServiceName == method));
             }
 
-            await AppendSelectElement(For, items, null, true, context, output);
+            await AppendSelectElement(For, items, null, true, context, output).ConfigureAwait(false);
         }
         else
         {
@@ -109,11 +109,11 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
                 if (prop.PropertyType == typeof(bool))
                 {
-                    await AppendCheckboxElement(modelExpression, service.ServiceName, show, context, output);
+                    await AppendCheckboxElement(modelExpression, service.ServiceName, show, context, output).ConfigureAwait(false);
                     continue;
                 }
 
-                await AppendInputElement(modelExpression, service.ServiceName, show, context, output);
+                await AppendInputElement(modelExpression, service.ServiceName, show, context, output).ConfigureAwait(false);
             }
         }
 
@@ -195,7 +195,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
             For = model,
             ViewContext = ViewContext
         };
-        output.Content.AppendHtml(await RenderTagHelper(tagHelper, "input", TagMode.SelfClosing, attributes, context.Items, null));
+        output.Content.AppendHtml(await RenderTagHelper(tagHelper, "input", TagMode.SelfClosing, attributes, context.Items, null).ConfigureAwait(false));
     }
 
     private async Task AppendSelectTagHelper(ModelExpression model, IList<SelectListItem> items, IList<TagHelperAttribute> attributes, TagHelperContext context, TagHelperOutput output)
@@ -206,7 +206,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
             Items = items,
             ViewContext = ViewContext
         };
-        output.Content.AppendHtml(await RenderTagHelper(tagHelper, "select", TagMode.StartTagAndEndTag, attributes, context.Items, null));
+        output.Content.AppendHtml(await RenderTagHelper(tagHelper, "select", TagMode.StartTagAndEndTag, attributes, context.Items, null).ConfigureAwait(false));
     }
 
     private async Task AppendValidationMessageTagHelper(ModelExpression model, TagHelperContext context, TagHelperOutput output)
@@ -222,7 +222,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
             new TagHelperAttribute("class", "text-danger")
         };
 
-        output.Content.AppendHtml(await RenderTagHelper(tagHelper, "span", TagMode.StartTagAndEndTag, attributes, context.Items, null));
+        output.Content.AppendHtml(await RenderTagHelper(tagHelper, "span", TagMode.StartTagAndEndTag, attributes, context.Items, null).ConfigureAwait(false));
     }
 
     private async Task AppendCheckboxElement(ModelExpression model, string group, bool visible, TagHelperContext context, TagHelperOutput output)
@@ -244,7 +244,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
             output.Content.AppendHtml($"{Environment.NewLine}            ");
             await AppendInputTagHelper(model, new TagHelperAttribute[1] {
                 new TagHelperAttribute("asp-for", model)
-            }, context, output);
+            }, context, output).ConfigureAwait(false);
 
             // aggiunge il testo del label
             output.Content.AppendHtml($"{Environment.NewLine}            ");
@@ -268,7 +268,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
         await AppendInputTagHelper(model, new TagHelperAttribute[2] {
             new TagHelperAttribute("class", "form-check-input"),
             new TagHelperAttribute("asp-for", model)
-        }, context, output);
+        }, context, output).ConfigureAwait(false);
 
         // aggiunge il testo del label
         output.Content.AppendHtml($"{Environment.NewLine}        ");
@@ -315,11 +315,11 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
             // aggiunge l'input vero e proprio
             output.Content.AppendHtml($"{Environment.NewLine}    ");
-            await AppendInputTagHelper(model, inputAttrs, context, output);
+            await AppendInputTagHelper(model, inputAttrs, context, output).ConfigureAwait(false);
 
             // aggiunge la riga dove scrivere eventuali errori
             output.Content.AppendHtml($"{Environment.NewLine}    ");
-            await AppendValidationMessageTagHelper(model, context, output);
+            await AppendValidationMessageTagHelper(model, context, output).ConfigureAwait(false);
 
             // chiude il label e il div iniziale
             output.Content.AppendHtml($"{Environment.NewLine}</div>");
@@ -332,7 +332,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
         // aggiunge l'input vero e proprio
         output.Content.AppendHtml($"{Environment.NewLine}    ");
-        await AppendInputTagHelper(model, inputAttrs, context, output);
+        await AppendInputTagHelper(model, inputAttrs, context, output).ConfigureAwait(false);
 
         // aggiunge il label
         output.Content.AppendHtml($"{Environment.NewLine}    ");
@@ -342,7 +342,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
         // aggiunge la riga dove scrivere eventuali errori
         output.Content.AppendHtml($"{Environment.NewLine}    ");
-        await AppendValidationMessageTagHelper(model, context, output);
+        await AppendValidationMessageTagHelper(model, context, output).ConfigureAwait(false);
 
         // chiude il div iniziale
         output.Content.AppendHtml($"{Environment.NewLine}</div>");
@@ -370,7 +370,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
             // aggiunge il select
             output.Content.AppendHtml($"{Environment.NewLine}    ");
             selectAttrs.Add(new TagHelperAttribute("class", "form-control"));
-            await AppendSelectTagHelper(model, items, selectAttrs, context, output);
+            await AppendSelectTagHelper(model, items, selectAttrs, context, output).ConfigureAwait(false);
 
             // chiude il div iniziale
             output.Content.AppendHtml($"{Environment.NewLine}</div>");
@@ -385,7 +385,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
             // aggiunge il select
             output.Content.AppendHtml($"{Environment.NewLine}    ");
             selectAttrs.Add(new TagHelperAttribute("class", "form-select"));
-            await AppendSelectTagHelper(model, items, selectAttrs, context, output);
+            await AppendSelectTagHelper(model, items, selectAttrs, context, output).ConfigureAwait(false);
 
             // aggiunge il label
             output.Content.AppendHtml($"{Environment.NewLine}    ");
@@ -461,7 +461,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
         };
 
         // creo l'elemento e lo trasformo in stringa
-        await tagHelper.ProcessAsync(context, output);
+        await tagHelper.ProcessAsync(context, output).ConfigureAwait(false);
 
         using StringWriter writer = new();
         output.WriteTo(writer, HtmlEncoder.Default);

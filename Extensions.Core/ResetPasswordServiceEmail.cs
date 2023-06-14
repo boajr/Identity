@@ -82,8 +82,8 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
             return false;
         }
 
-        TUser? user = await _userManager.FindByEmailAsync(data.Email);
-        if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
+        TUser? user = await _userManager.FindByEmailAsync(data.Email).ConfigureAwait(false);
+        if (user == null || !await _userManager.IsEmailConfirmedAsync(user).ConfigureAwait(false))
         {
             // Don't reveal that the user does not exist or is not confirmed
             return true;
@@ -91,14 +91,14 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
 
         // For more information on how to enable account confirmation and password reset please
         // visit https://go.microsoft.com/fwlink/?LinkID=532713
-        string code = await _userManager.GeneratePasswordResetTokenAsync(user);
+        string code = await _userManager.GeneratePasswordResetTokenAsync(user).ConfigureAwait(false);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         string callbackUrl = GetCallbackUrl(code);
 
         await SendEmailAsync(
             data.Email,
             Localizer["Reset Password"],
-            Localizer["Please reset your password by <a href='{0}'>clicking here</a>.", HtmlEncoder.Default.Encode(callbackUrl)]);
+            Localizer["Please reset your password by <a href='{0}'>clicking here</a>.", HtmlEncoder.Default.Encode(callbackUrl)]).ConfigureAwait(false);
 
         return true;
     }

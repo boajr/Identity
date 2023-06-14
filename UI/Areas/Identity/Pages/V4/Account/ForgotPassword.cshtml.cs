@@ -80,7 +80,7 @@ public class BoaForgotPasswordModel : PageModel
                         prop?.SetValue(Data, Convert.ChangeType(p.Value[0], prop.PropertyType));
                     }
 
-                    if (await service.SendResetPasswordRequest(PageContext, Data, "Input."))
+                    if (await service.SendResetPasswordRequest(PageContext, Data, "Input.").ConfigureAwait(false))
                     {
                         return RedirectToPage("./ForgotPasswordConfirmation", new { method = Input.Method });
                     }
