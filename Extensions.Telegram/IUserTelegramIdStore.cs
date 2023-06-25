@@ -31,7 +31,7 @@ public interface IUserTelegramIdStore<TUser> : IUserStore<TUser> where TUser : c
     /// <param name="phoneNumber">The phone number to return the user for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>
-    /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified telegram id.
+    /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified phone number.
     /// </returns>
     Task<TUser?> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken);
 
