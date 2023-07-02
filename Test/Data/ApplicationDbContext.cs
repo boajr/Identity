@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Test.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<IdentityTelegramUser>
+    public class ApplicationDbContext : IdentityDbContext<IdentityTelegramUser, IdentityTelegramToken>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

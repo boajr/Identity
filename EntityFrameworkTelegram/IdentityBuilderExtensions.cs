@@ -41,7 +41,8 @@ public static class IdentityBuilderExtensions
             Type userStoreType;
             Type roleStoreType;
             var identityContext = FindGenericBaseType(contextType, typeof(IdentityDbContext<,,,,,,,>));
-            if (identityContext == null)
+            var telegramContext = FindGenericBaseType(contextType, typeof(Boa.Identity.EntityFrameworkTelegram.IdentityDbContext<,>));
+            if (identityContext == null || telegramContext == null)
             {
                 // If its a custom DbContext, we can only add the default POCOs
                 userStoreType = typeof(TelegramUserStore<,,,>).MakeGenericType(userType, roleType, contextType, keyType);
@@ -49,13 +50,14 @@ public static class IdentityBuilderExtensions
             }
             else
             {
-                userStoreType = typeof(TelegramUserStore<,,,,,,,,>).MakeGenericType(userType, roleType, contextType,
+                userStoreType = typeof(TelegramUserStore<,,,,,,,,,>).MakeGenericType(userType, roleType, contextType,
                     identityContext.GenericTypeArguments[2],
                     identityContext.GenericTypeArguments[3],
                     identityContext.GenericTypeArguments[4],
                     identityContext.GenericTypeArguments[5],
                     identityContext.GenericTypeArguments[7],
-                    identityContext.GenericTypeArguments[6]);
+                    identityContext.GenericTypeArguments[6],
+                    telegramContext.GenericTypeArguments[1]);
                 roleStoreType = typeof(RoleStore<,,,,>).MakeGenericType(roleType, contextType,
                     identityContext.GenericTypeArguments[2],
                     identityContext.GenericTypeArguments[4],
@@ -68,18 +70,20 @@ public static class IdentityBuilderExtensions
         {   // No Roles
             Type userStoreType;
             var identityContext = FindGenericBaseType(contextType, typeof(IdentityUserContext<,,,,>));
-            if (identityContext == null)
+            var telegramContext = FindGenericBaseType(contextType, typeof(Boa.Identity.EntityFrameworkTelegram.IdentityUserContext<,>));
+            if (identityContext == null || telegramContext == null)
             {
                 // If its a custom DbContext, we can only add the default POCOs
                 userStoreType = typeof(TelegramUserOnlyStore<,,>).MakeGenericType(userType, contextType, keyType);
             }
             else
             {
-                userStoreType = typeof(TelegramUserOnlyStore<,,,,,>).MakeGenericType(userType, contextType,
+                userStoreType = typeof(TelegramUserOnlyStore<,,,,,,>).MakeGenericType(userType, contextType,
                     identityContext.GenericTypeArguments[1],
                     identityContext.GenericTypeArguments[2],
                     identityContext.GenericTypeArguments[3],
-                    identityContext.GenericTypeArguments[4]);
+                    identityContext.GenericTypeArguments[4],
+                    telegramContext.GenericTypeArguments[1]);
             }
             services.TryAddScoped(typeof(IUserStore<>).MakeGenericType(userType), userStoreType);
         }
