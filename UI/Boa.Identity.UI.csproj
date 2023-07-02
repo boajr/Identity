@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Extensions.Core\Boa.Extensions.Identity.Core.csproj" />
+    <ProjectReference Include="..\Extensions.Telegram\Boa.Extensions.Identity.Telegram.csproj" />
   </ItemGroup>
 
 </Project>

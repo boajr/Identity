@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Boa.Identity.Telegram;
+using Microsoft.AspNetCore.Identity;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -50,7 +51,8 @@ public static class IdentityServiceCollectionUIExtensions
             .AddBoaUI()
             .AddDefaultUI()
             .AddDefaultTokenProviders()
-            .AddErrorDescriber<Boa.Identity.IdentityErrorDescriber>();
+            .AddErrorDescriber<Boa.Identity.IdentityErrorDescriber>()
+            .AddUserManager<TelegramUserManager<TUser>>();
         ;
     }
 }

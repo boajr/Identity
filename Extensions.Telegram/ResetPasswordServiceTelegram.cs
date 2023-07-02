@@ -16,7 +16,7 @@ internal sealed class ResetPasswordServiceTelegramDataModel
 internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService<ResetPasswordServiceTelegramDataModel>
     where TUser : class
 {
-    private readonly IUserTelegramIdStore<TUser> _userStore;
+    private readonly TelegramUserManager<TUser> _userManager;
     private readonly ITelegramBotClient _botClient;
 
     public sealed override string ServiceName => "Telegram";
@@ -29,21 +29,21 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
 
     public ResetPasswordServiceTelegram(IServiceProvider serviceProvider,
                                         IObjectModelValidator modelValidator,
-                                        IUserStore<TUser> userStore,
+                                        UserManager<TUser> userManager,
                                         Boa.TelegramBotService.TelegramBotService botClient)
         : base(serviceProvider, modelValidator)
     {
-        if (userStore == null)
+        if (userManager == null)
         {
-            throw new ArgumentNullException(nameof(userStore));
+            throw new ArgumentNullException(nameof(userManager));
         }
 
-        if (userStore is not IUserTelegramIdStore<TUser> userTelegramIdStore)
+        if (userManager is not TelegramUserManager<TUser> telegramUserManager)
         {
-            throw new NotSupportedException("Store does not implement IUserTelegramIdStore<TUser>.");
+            throw new NotSupportedException("Store does not implement TelegramUserManager<TUser>.");
         }
 
-        _userStore = userTelegramIdStore;
+        _userManager = telegramUserManager;
         _botClient = botClient;
     }
 
@@ -54,14 +54,14 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
             return false;
         }
 
-        TUser? user = await _userStore.FindByPhoneNumberAsync(data.PhoneNumber, default).ConfigureAwait(false);
+        TUser? user = await _userManager.FindByPhoneNumberAsync(data.PhoneNumber).ConfigureAwait(false);
         if (user == null)
         {
             // Don't reveal that the user does not exist
             return true;
         }
 
-        long? telegramId = await _userStore.GetTelegramIdAsync(user, default).ConfigureAwait(false);
+        long? telegramId = await _userManager.GetTelegramIdAsync(user).ConfigureAwait(false);
         if (telegramId == null)
         {
             // Don't reveal that the user does not exist
