@@ -26,6 +26,20 @@ namespace Test.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AspNetTelegramTokens",
+                columns: table => new
+                {
+                    TelegramId = table.Column<long>(type: "INTEGER", nullable: false),
+                    LoginProvider = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    Value = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetTelegramTokens", x => new { x.TelegramId, x.LoginProvider, x.Name });
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetUsers",
                 columns: table => new
                 {
@@ -200,6 +214,9 @@ namespace Test.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetTelegramTokens");
 
             migrationBuilder.DropTable(
                 name: "AspNetUserClaims");
