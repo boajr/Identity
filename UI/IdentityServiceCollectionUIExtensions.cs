@@ -51,8 +51,6 @@ public static class IdentityServiceCollectionUIExtensions
             .AddBoaUI()
             .AddDefaultUI()
             .AddDefaultTokenProviders()
-            .AddErrorDescriber<Boa.Identity.IdentityErrorDescriber>()
-            .AddUserManager<TelegramUserManager<TUser>>();
-        ;
+            .AddErrorDescriber<Boa.Identity.IdentityErrorDescriber>();
     }
 }

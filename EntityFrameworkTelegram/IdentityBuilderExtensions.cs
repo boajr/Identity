@@ -21,6 +21,17 @@ public static class IdentityBuilderExtensions
     public static IdentityBuilder AddBoaEntityFrameworkTelegramStores<TContext>(this IdentityBuilder builder)
         where TContext : DbContext
     {
+        // Aggiungo la UserManager con i comandi aggiuntivi per gestire la parte di Telegram
+        // builder.AddUserManager<TelegramUserManager<TUser>>();
+        var userManagerType = typeof(UserManager<>).MakeGenericType(builder.UserType);
+        var customType = typeof(TelegramUserManager<>).MakeGenericType(builder.UserType);
+        if (userManagerType != customType)
+        {
+            builder.Services.AddScoped(customType, services => services.GetRequiredService(userManagerType));
+        }
+        builder.Services.AddScoped(userManagerType, customType);
+
+        // aggiungo gli store che gestiscono i comandi aggiuntivi per la parte di Telegram
         AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext));
         return builder;
     }
