@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
-using Telegram.Bot.Types;
 
 namespace Boa.Identity.EntityFrameworkTelegram;
 
@@ -141,9 +140,24 @@ public class TelegramUserStore<TUser, TRole, TContext, [DynamicallyAccessedMembe
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the user's telegram id, if any.</returns>
     public virtual Task SetTelegramIdAsync(TUser user, long? telegramId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        cancellationToken.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+        user.TelegramId = telegramId;
+        return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Gets the user, if any, associated with the specified phone number.
+    /// </summary>
+    /// <param name="phoneNumber">The phone number to return the user for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>
+    /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified phone number.
+    /// </returns>
     public virtual Task<TUser?> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -282,6 +296,23 @@ public class TelegramUserStore<TUser, TRole, TContext, [DynamicallyAccessedMembe
 
         var entry = await FindTelegramTokenAsync(telegramId, loginProvider, name, cancellationToken).ConfigureAwait(false);
         return entry?.Value;
+    }
+
+    /// <summary>
+    /// Returns all tokens.
+    /// </summary>
+    /// <param name="telegramId">The Telegram user id.</param>
+    /// <param name="loginProvider">The authentication provider for tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+    public virtual async Task<(string Name, string? Value)[]> GetAllTelegramTokensAsync(long telegramId, string loginProvider, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+
+        return (await TelegramTokens
+            .Where(tt => tt.TelegramId == telegramId && tt.LoginProvider == loginProvider)
+            .Select(tt => new { tt.Name, tt.Value }).ToListAsync(cancellationToken)).Select(tt => (tt.Name, tt.Value)).ToArray();
     }
 
     /// <summary>

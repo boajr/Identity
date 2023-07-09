@@ -1,12 +1,12 @@
 ﻿using Boa.TelegramBotService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Boa.Identity.Telegram
 {
@@ -19,7 +19,7 @@ namespace Boa.Identity.Telegram
         public int Order => 500;
 
         /// <summary>
-        /// Gets the <see cref="Microsoft.Extensions.Localization.IStringLocalizer"/> for localized strings.
+        /// Gets the <see cref="IStringLocalizer"/> for localized strings.
         /// </summary>
         protected IStringLocalizer Localizer
         {
@@ -47,95 +47,156 @@ namespace Boa.Identity.Telegram
             _userManager = telegramUserManager;
         }
 
+        private readonly string[] Actions = { "RegisterUserMessage", "ResetPasswordMessage" };
+
         public async Task<bool> HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            // verifico che sia un messaggio inviato in risposta ad un messaggio di controllo
-            // generato dal bot. Identifico i messaggi di controllo perché iniziano con una
-            // parentesi quadra.
-            if (update.Type != UpdateType.Message || update.Message?.ReplyToMessage == null || update.Message.From == null
-                || update.Message.ReplyToMessage.From?.Id != botClient.BotId || update.Message.ReplyToMessage.Text?[0] != '[')
+            // se non è un messaggio, non faccio niente (per il momento)
+            if (update.Type != UpdateType.Message || update.Message?.From == null)
                 return false;
 
-            Console.WriteLine(update.Message.From.LanguageCode);
+            // verifico se ho azioni pending per l'utente
+            long chatId = update.Message.Chat.Id;
+            var tokens = await _userManager.GetAllTelegramTokensAsync(chatId, "[boaidentity]");
 
-            int? pos = update.Message?.ReplyToMessage.Text.IndexOf("]");
-            if (pos == null || pos == -1)
-                return false;
+            // salvo su una variabile locale l'id del messaggio risposto
+            int? replyId = update.Message.ReplyToMessage?.MessageId;
 
-            return (update.Message?.ReplyToMessage.Text[1..pos.Value]) switch
+            // cancello tutte le azioni pending (perché al primo messaggio risposto vengono annullate)
+            bool retVal = false;
+            foreach (var (name, value) in tokens)
             {
-                "UNKNWUSR" => await RegisterUser(botClient, update.Message.ReplyToMessage, update.Message, cancellationToken).ConfigureAwait(false),
-                "RESETPWD" => await ResetPassword(botClient, update.Message.ReplyToMessage, update.Message, cancellationToken).ConfigureAwait(false),
-                _ => false,
-            };
+                if (!Actions.Contains(name))
+                    continue;
+
+                if (!int.TryParse(value, out var msgId))
+                    continue;
+
+                // elimina la riga dal DB
+                //await _userManager.RemoveTelegramTokenAsync(chatId, "[boaidentity]", name);
+
+                // elimina la riga dalla chat
+                //await DeleteMessageNoExceptionAsync(botClient, chatId, msgId, cancellationToken).ConfigureAwait(false);
+
+                // verifico se il messaggio è la risposta a un'azione
+                if (msgId == replyId)
+                {
+                    switch (name)
+                    {
+                        case "RegisterUserMessage":
+                            retVal = await RegisterUser(botClient, update.Message, cancellationToken).ConfigureAwait(false);
+                            break;
+
+                        case "ResetPasswordMessage":
+                            retVal = await ResetPassword(botClient, update.Message, cancellationToken).ConfigureAwait(false);
+                            break;
+                    }
+                }
+
+                // verifico se il messaggio è il messaggio immediatamente successivo a un'azione
+                if (msgId + 1 == update.Message.MessageId)
+                {
+                    switch (name)
+                    {
+                        case "RegisterUserMessage":
+                            // potrebbe essere l'annulla, in questo caso cancello il messaggio
+                            if (update.Message.Text == Localizer["Cancel"])
+                            {
+                                retVal = await RegisterUser(botClient, update.Message, cancellationToken).ConfigureAwait(false);
+                            }
+                            break;
+
+                        //case "ResetPasswordMessage":
+                        //    retVal = await ResetPassword(botClient, update.Message, cancellationToken).ConfigureAwait(false);
+                        //    break;
+                    }
+                }
+            }
+
+            return retVal;
         }
 
-        [JsonObject(MemberSerialization.OptIn, NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
-        public class ForceReplyKeyboardMarkup : ReplyMarkupBase //ReplyKeyboardMarkup
+        private static async Task DeleteMessageNoExceptionAsync(ITelegramBotClient botClient, ChatId chatId, int messageId, CancellationToken cancellationToken)
         {
-            /// <summary>
-            /// Shows reply interface to the user, as if they manually selected the bot’s message and tapped 'Reply'
-            /// </summary>
-            [JsonProperty(Required = Required.Always)]
-            public bool ForceReply => true;
-
-            //public ForceReplyKeyboardMarkup(IEnumerable<IEnumerable<KeyboardButton>> keyboard): base (keyboard)
-            //{
-            //}
+            try
+            {
+                await botClient.DeleteMessageAsync(chatId, messageId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ApiRequestException) { }
         }
 
-
-        private async Task<bool> RegisterUser(ITelegramBotClient botClient, Message request, Message response, CancellationToken cancellationToken)
+        private async Task<bool> RegisterUser(ITelegramBotClient botClient, Message response, CancellationToken cancellationToken)
         {
-            //await botClient.DeleteMessageAsync(response.Chat.Id, request.MessageId, cancellationToken).ConfigureAwait(false);
-            await botClient.DeleteMessageAsync(response.Chat.Id, response.MessageId, cancellationToken).ConfigureAwait(false);
+            await DeleteMessageNoExceptionAsync(botClient, response.Chat.Id, response.MessageId, cancellationToken).ConfigureAwait(false);
+
+            string? text = null;
+            bool retry = true;
 
             if (response.Type == MessageType.Contact && response.Contact != null)
             {
                 if (response.Contact.UserId != response.From!.Id)
                 {
-                    IReplyMarkup markup = new ReplyKeyboardMarkup(new[]
-                    {
-                        new KeyboardButton[] { KeyboardButton.WithRequestContact(Localizer["Send\r\nCONTACT CARD"]) },
-                        new KeyboardButton[] { new KeyboardButton("[UNKNWUSR] " + Localizer["Cancel"]) }
-                    });
-
-                    await botClient.SendTextMessageAsync(
-                        chatId: response.Chat.Id,
-                        text: "[UNKNWUSR] " + Localizer["This isn't your contact card!\r\nPlease post the right one"],
-                        replyMarkup: markup,
-                        cancellationToken: cancellationToken
-                    ).ConfigureAwait(false);
-
-
-                    //await botClient.SendTextMessageAsync(
-                    //    chatId: response.Chat.Id,
-                    //    text: "[RESETPWD] " +
-                    //        result.Errors.First().Description + "\r\n\r\n" +
-                    //        Localizer["Reply to this message with new password"],
-                    //    replyMarkup: new ForceReplyMarkup(),
-                    //    cancellationToken: cancellationToken
-                    //).ConfigureAwait(false);
-
-
-
+                    text = Localizer["This isn't your contact card!\r\nPlease post the right one"];
                 }
-
+                else if (string.IsNullOrWhiteSpace(response.Contact.PhoneNumber))
+                {
+                    text = Localizer["This contact card does not contain the phone number!\r\nPlease post one with the correct value"];
+                }
+                else
+                {
+                    // cerca nella tabella degli utenti il numero di telefono (Telegram li passa senza il + iniziale)
+                    var user = await _userManager.FindByPhoneNumberAsync("+" + response.Contact.PhoneNumber);
+                    if (user == null)
+                    {
+                        text = Localizer["Your phone number is not in the user list!"];
+                        retry = false;
+                    }
+                    else
+                    {
+                        await _userManager.SetTelegramIdAsync(user, response.Contact.UserId);
+                        text = Localizer["User updated successfully"];
+                        retry = false;
+                    }
+                }
+            }
+            else
+            {
+                // se arrivo qui, è un messaggio di testo e lo considero la traduzione di "Cancel"
+                retry = false;
             }
 
+            // invio un messaggio all'utente o per chiedergli nuovamente la scheda di contatto o per nascondergli la tastiera
+            var msg = await botClient.SendTextMessageAsync(
+                chatId: response.Chat.Id,
+                text: text ?? "Remove keyboard",
+                replyMarkup: retry ?
+                    new ReplyKeyboardMarkup(new[] {
+                            new KeyboardButton[] { KeyboardButton.WithRequestContact(Localizer["Send\r\nCONTACT CARD"]) },
+                            new KeyboardButton[] { new KeyboardButton(Localizer["Cancel"]) }
+                    }) : new ReplyKeyboardRemove(),
+                cancellationToken: cancellationToken
+            ).ConfigureAwait(false);
 
-
-
-
-
+            if (retry)
+            {
+                // Se invio nuovamente la richiesta all'utente, la registro per poter processare la
+                // risposta che mi darà
+                await _userManager.SetTelegramTokenAsync(response.Chat.Id, "[boaidentity]", "RegisterUserMessage", msg.MessageId.ToString()).ConfigureAwait(false);
+            } 
+            else if (text == null)
+            {
+                // Se invece non ho un testo da visualizzare all'utente, vuol dire che il messaggio
+                // l'ho inviato solo per nascondere la tastiera, e quindi non serve che l'utente lo
+                // legga
+                await DeleteMessageNoExceptionAsync(botClient, response.Chat.Id, msg.MessageId, cancellationToken).ConfigureAwait(false);
+            }
             return true;
         }
 
-        private async Task<bool> ResetPassword(ITelegramBotClient botClient, Message request, Message response, CancellationToken cancellationToken)
+        private async Task<bool> ResetPassword(ITelegramBotClient botClient, Message response, CancellationToken cancellationToken)
         {
-            // cancello entrambi i messaggi dalla chat
-            //await botClient.DeleteMessageAsync(response.Chat.Id, request.MessageId, cancellationToken).ConfigureAwait(false);
-            await botClient.DeleteMessageAsync(response.Chat.Id, response.MessageId, cancellationToken).ConfigureAwait(false);
+            // cancello il messaggio contenete la password
+            await DeleteMessageNoExceptionAsync(botClient, response.Chat.Id, response.MessageId, cancellationToken).ConfigureAwait(false);
 
             // controllo che la differenza tra richiesta e risposta non superi le xxx ore (serve???)
 
@@ -166,14 +227,16 @@ namespace Boa.Identity.Telegram
 
             // se non sono riuscito a resettare la password comunico al client il primo errore e
             // chiedo se si vuole riprovare.
-            await botClient.SendTextMessageAsync(
+            var msg = await botClient.SendTextMessageAsync(
                 chatId: response.Chat.Id,
-                text: "[RESETPWD] " +
-                    result.Errors.First().Description + "\r\n\r\n" +
+                text: result.Errors.First().Description + "\r\n\r\n" +
                     Localizer["Reply to this message with new password"],
                 replyMarkup: new ForceReplyMarkup(),
                 cancellationToken: cancellationToken
             ).ConfigureAwait(false);
+
+            // save messageid to check response from user
+            await _userManager.SetTelegramTokenAsync(response.Chat.Id, "[boaidentity]", "ResetPasswordMessage", msg.MessageId.ToString()).ConfigureAwait(false);
 
             return true;
         }

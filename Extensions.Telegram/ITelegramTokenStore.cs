@@ -39,6 +39,15 @@ public interface ITelegramTokenStore
     Task<string?> GetTelegramTokenAsync(long telegramId, string loginProvider, string name, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Returns all tokens.
+    /// </summary>
+    /// <param name="telegramId">The Telegram user id.</param>
+    /// <param name="loginProvider">The authentication provider for tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+    Task<(string Name, string? Value)[]> GetAllTelegramTokensAsync(long telegramId, string loginProvider, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Confirm the modifications in the user store.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>

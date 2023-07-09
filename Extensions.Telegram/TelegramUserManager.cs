@@ -1,18 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
-using Telegram.Bot.Types;
-using Microsoft.Extensions.Localization;
-using System.Threading;
 
 namespace Boa.Identity.Telegram
 {
@@ -49,8 +41,6 @@ namespace Boa.Identity.Telegram
         {
             _services = services;
         }
-
-
 
         /// <summary>
         /// Gets a flag indicating whether the backing user store supports user telegram ids.
@@ -165,25 +155,17 @@ namespace Boa.Identity.Telegram
             {
                 IStringLocalizer localizer = new IdentityStringLocalizer(_services, "Boa.Identity.ResetPasswordService");
 
-                ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup(new[]
-                {
-                    new KeyboardButton[] { KeyboardButton.WithRequestContact(localizer["Send\r\nCONTACT CARD"]) },
-                    new KeyboardButton[] { new KeyboardButton(localizer["Cancel"]) }
-                });
-
-                await SetAuthenticationTokenAsync(user, "MyApp", "RefreshToken", "BOH!!!").ConfigureAwait(false);
-
-                await botClient.SendTextMessageAsync(
+                var msg = await botClient.SendTextMessageAsync(
                     chatId: telegramId,
-                    text: "[UNKNWUSR] " + localizer["Unknown user!\r\nPlease post your contact card to be identified"],
-                    replyMarkup: keyboard
+                    text: localizer["Unknown user!\r\nPlease post your contact card to be identified"],
+                    replyMarkup: new ReplyKeyboardMarkup(new[] {
+                        new KeyboardButton[] { KeyboardButton.WithRequestContact(localizer["Send\r\nCONTACT CARD"]) },
+                        new KeyboardButton[] { new KeyboardButton(localizer["Cancel"]) }
+                    })
                 ).ConfigureAwait(false);
 
-                //await botClient.SendTextMessageAsync(
-                //    chatId: telegramId,
-                //    text: "[UNKNWUSR]" + localizer["Unknown user!\r\nPlease post your contact card to be identified"],
-                //    replyMarkup: new ForceReplyMarkup()
-                //).ConfigureAwait(false);
+                // save messageid to check response from user
+                await SetTelegramTokenAsync(telegramId, "[boaidentity]", "RegisterUserMessage", msg.MessageId.ToString()).ConfigureAwait(false);
             }
 
             return user;
@@ -227,12 +209,6 @@ namespace Boa.Identity.Telegram
             return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
         }
 
-
-
-
-
-
-
         /// <summary>
         /// Returns a Telegram token for a user.
         /// </summary>
@@ -257,6 +233,24 @@ namespace Boa.Identity.Telegram
         }
 
         /// <summary>
+        /// Returns all Telegram tokens for a user.
+        /// </summary>
+        /// <param name="telegramId"></param>
+        /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
+        /// <returns>The authentication token for a user</returns>
+        public virtual Task<(string Name, string? Value)[]> GetAllTelegramTokensAsync(long telegramId, string loginProvider)
+        {
+            ThrowIfDisposed();
+            var store = GetTelegramTokenStore();
+            if (loginProvider == null)
+            {
+                throw new ArgumentNullException(nameof(loginProvider));
+            }
+
+            return store.GetAllTelegramTokensAsync(telegramId, loginProvider, CancellationToken);
+        }
+
+        /// <summary>
         /// Sets a Telegram token for a user.
         /// </summary>
         /// <param name="telegramId"></param>
@@ -278,6 +272,7 @@ namespace Boa.Identity.Telegram
             }
 
             // REVIEW: should updating any tokens affect the security stamp?
+            await store.SetTelegramTokenAsync(telegramId, loginProvider, tokenName, tokenValue, CancellationToken).ConfigureAwait(false);
             return await store.SaveChangesAsync(CancellationToken).ConfigureAwait(false);
         }
 

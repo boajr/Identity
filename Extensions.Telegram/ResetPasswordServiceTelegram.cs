@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Boa.Identity.Telegram;
@@ -68,11 +69,26 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
             return true;
         }
 
-        await _botClient.SendTextMessageAsync(
+        // remove old reset password message
+        var msgIdText = await _userManager.GetTelegramTokenAsync(telegramId.Value, "[boaidentity]", "ResetPasswordMessage").ConfigureAwait(false);
+        if (msgIdText != null && int.TryParse(msgIdText, out int msgId))
+        {
+            try
+            {
+                await _botClient.DeleteMessageAsync(telegramId, msgId).ConfigureAwait(false);
+            }
+            catch (ApiRequestException) { }
+        }
+
+        // send message to user Telegram Chat
+        var msg = await _botClient.SendTextMessageAsync(
             chatId: telegramId,
-            text: "[RESETPWD] " + Localizer["Reply to this message with new password"],
+            text: Localizer["Reply to this message with new password"],
             replyMarkup: new ForceReplyMarkup()
         ).ConfigureAwait(false);
+
+        // save messageid to check response from user
+        await _userManager.SetTelegramTokenAsync(telegramId.Value, "[boaidentity]", "ResetPasswordMessage", msg.MessageId.ToString()).ConfigureAwait(false);
 
         return true;
     }
