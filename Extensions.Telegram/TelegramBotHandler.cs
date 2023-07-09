@@ -72,10 +72,10 @@ namespace Boa.Identity.Telegram
                     continue;
 
                 // elimina la riga dal DB
-                //await _userManager.RemoveTelegramTokenAsync(chatId, "[boaidentity]", name);
+                await _userManager.RemoveTelegramTokenAsync(chatId, "[boaidentity]", name);
 
                 // elimina la riga dalla chat
-                //await DeleteMessageNoExceptionAsync(botClient, chatId, msgId, cancellationToken).ConfigureAwait(false);
+                await DeleteMessageNoExceptionAsync(botClient, chatId, msgId, cancellationToken).ConfigureAwait(false);
 
                 // verifico se il messaggio è la risposta a un'azione
                 if (msgId == replyId)
