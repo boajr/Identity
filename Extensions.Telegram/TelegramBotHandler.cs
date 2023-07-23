@@ -39,7 +39,7 @@ namespace Boa.Identity.Telegram
 
             if (userManager is not TelegramUserManager<TUser> telegramUserManager)
             {
-                throw new NotSupportedException("Store does not implement TelegramUserManager<TUser>.");
+                throw new NotSupportedException("UserManager does not derive from TelegramUserManager<TUser>.");
             }
 
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));

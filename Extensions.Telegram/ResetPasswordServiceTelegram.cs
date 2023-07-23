@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Boa.Identity.Telegram;
@@ -41,7 +43,7 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
 
         if (userManager is not TelegramUserManager<TUser> telegramUserManager)
         {
-            throw new NotSupportedException("Store does not implement TelegramUserManager<TUser>.");
+            throw new NotSupportedException("UserManager does not derive from TelegramUserManager<TUser>.");
         }
 
         _userManager = telegramUserManager;
