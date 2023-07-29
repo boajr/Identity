@@ -40,15 +40,6 @@ else
 {
     app.UseExceptionHandler("/Error");
 }
-
-
-
-
-app.UsePathBase("/ambrogio");
-
-
-
-
 app.UseStaticFiles();
 
 app.UseRouting();
