@@ -1,5 +1,4 @@
-﻿using Boa.Identity.Telegram;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
