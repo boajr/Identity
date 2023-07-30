@@ -48,3 +48,4 @@ mono_crash.*.blob
 
 # project specific files
 Test/appsettings.Development.json
+TestTelegram/appsettings.Development.json

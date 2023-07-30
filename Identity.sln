@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boa.Identity.EntityFramewor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boa.Identity.UI", "UI\Boa.Identity.UI.csproj", "{F7F26537-F9D7-43CA-99E9-453A692B7FBA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTelegram", "TestTelegram\TestTelegram.csproj", "{6D2F8EA5-460E-494F-A70E-AF6045F32CCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{F7F26537-F9D7-43CA-99E9-453A692B7FBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7F26537-F9D7-43CA-99E9-453A692B7FBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7F26537-F9D7-43CA-99E9-453A692B7FBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D2F8EA5-460E-494F-A70E-AF6045F32CCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D2F8EA5-460E-494F-A70E-AF6045F32CCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D2F8EA5-460E-494F-A70E-AF6045F32CCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D2F8EA5-460E-494F-A70E-AF6045F32CCA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

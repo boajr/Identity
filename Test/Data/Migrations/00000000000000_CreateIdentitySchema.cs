@@ -26,20 +26,6 @@ namespace Test.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetTelegramTokens",
-                columns: table => new
-                {
-                    TelegramId = table.Column<long>(type: "INTEGER", nullable: false),
-                    LoginProvider = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    Value = table.Column<string>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetTelegramTokens", x => new { x.TelegramId, x.LoginProvider, x.Name });
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetUsers",
                 columns: table => new
                 {
@@ -55,10 +41,10 @@ namespace Test.Data.Migrations
                     PhoneNumber = table.Column<string>(type: "TEXT", nullable: true),
                     PhoneNumberConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
                     TwoFactorEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
+                    TwoFactorService = table.Column<string>(type: "TEXT", nullable: true),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
                     LockoutEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "INTEGER", nullable: false),
-                    TelegramId = table.Column<long>(type: "INTEGER", nullable: true)
+                    AccessFailedCount = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -214,9 +200,6 @@ namespace Test.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
-
-            migrationBuilder.DropTable(
-                name: "AspNetTelegramTokens");
 
             migrationBuilder.DropTable(
                 name: "AspNetUserClaims");

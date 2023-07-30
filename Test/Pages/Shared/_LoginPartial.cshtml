@@ -1,7 +1,6 @@
-﻿@using Boa.Identity.Telegram;
-@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityTelegramUser> SignInManager
-@inject UserManager<IdentityTelegramUser> UserManager
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<TestIdentityUser> SignInManager
+@inject UserManager<TestIdentityUser> UserManager
 
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
