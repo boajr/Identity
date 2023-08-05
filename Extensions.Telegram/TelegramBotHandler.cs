@@ -13,7 +13,7 @@ namespace Boa.Identity.Telegram
         where TUser : class
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly TelegramUserManager<TUser> _userManager;
+        private readonly UserManager<TUser> _userManager;
 
         public int Order => 500;
 
@@ -32,18 +32,8 @@ namespace Boa.Identity.Telegram
 
         public TelegramBotHandler(IServiceProvider serviceProvider, UserManager<TUser> userManager)
         {
-            if (userManager == null)
-            {
-                throw new ArgumentNullException(nameof(userManager));
-            }
-
-            if (userManager is not TelegramUserManager<TUser> telegramUserManager)
-            {
-                throw new NotSupportedException("UserManager does not derive from TelegramUserManager<TUser>.");
-            }
-
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _userManager = telegramUserManager;
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         private readonly string[] Actions = { "RegisterUserMessage", "ResetPasswordMessage" };

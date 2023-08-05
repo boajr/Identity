@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Boa.Identity.Telegram;
@@ -19,7 +17,7 @@ internal sealed class ResetPasswordServiceTelegramDataModel
 internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService<ResetPasswordServiceTelegramDataModel>
     where TUser : class
 {
-    private readonly TelegramUserManager<TUser> _userManager;
+    private readonly UserManager<TUser> _userManager;
     private readonly ITelegramBotClient _botClient;
 
     public sealed override string ServiceName => "Telegram";
@@ -36,18 +34,8 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
                                         Boa.TelegramBotService.TelegramBotService botClient)
         : base(serviceProvider, modelValidator)
     {
-        if (userManager == null)
-        {
-            throw new ArgumentNullException(nameof(userManager));
-        }
-
-        if (userManager is not TelegramUserManager<TUser> telegramUserManager)
-        {
-            throw new NotSupportedException("UserManager does not derive from TelegramUserManager<TUser>.");
-        }
-
-        _userManager = telegramUserManager;
-        _botClient = botClient;
+        _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        _botClient = botClient ?? throw new ArgumentNullException(nameof(botClient));
     }
 
     protected override async Task<bool> ProcessAsync(ResetPasswordServiceTelegramDataModel data)

@@ -17,11 +17,7 @@ public class TelegramTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<
     /// <returns>True if the user has an email address set, otherwise false.</returns>
     public override async Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
     {
-        if (manager is not TelegramUserManager<TUser> tuManager) { 
-            return false;
-        }
-        var telegramId = await tuManager.GetTelegramIdAsync(user).ConfigureAwait(false);
-
+        var telegramId = await manager.GetTelegramIdAsync(user).ConfigureAwait(false);
         return telegramId != null;
     }
 
@@ -35,12 +31,7 @@ public class TelegramTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<
     public override async Task<string> GetUserModifierAsync(string purpose, UserManager<TUser> manager,
         TUser user)
     {
-        if (manager is not TelegramUserManager<TUser> tuManager)
-        {
-            throw new NotSupportedException("Store does not implement IUserTelegramIdStore<TUser>.");
-        }
-        var telegramId = await tuManager.GetTelegramIdAsync(user).ConfigureAwait(false);
-
+        var telegramId = await manager.GetTelegramIdAsync(user).ConfigureAwait(false);
         return $"Telegram:{purpose}:{telegramId}";
     }
 }

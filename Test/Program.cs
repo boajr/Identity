@@ -15,7 +15,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddBoaIdentity<TestIdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddBoaIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddBoaResetPasswordServiceDefaultUIEmail();
 builder.Services.AddRazorPages();

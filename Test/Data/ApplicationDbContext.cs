@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Test.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<TestIdentityUser>
+    public class ApplicationDbContext : IdentityDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

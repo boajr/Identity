@@ -1,60 +1,28 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using System.Reflection;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Boa.Identity.Telegram
 {
-    /// <summary>
-    /// Provides the APIs for managing user in a persistence store.
-    /// </summary>
-    /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
-    public class TelegramUserManager<TUser> : UserManager<TUser> where TUser : class
+    public static class UserManagerExtensions
     {
-        private readonly IServiceProvider _services;
-
-        /// <summary>
-        /// Constructs a new instance of <see cref="TelegramUserManager{TUser}"/>.
-        /// </summary>
-        /// <param name="store">The persistence store the manager will operate over.</param>
-        /// <param name="optionsAccessor">The accessor used to access the <see cref="IdentityOptions"/>.</param>
-        /// <param name="passwordHasher">The password hashing implementation to use when saving passwords.</param>
-        /// <param name="userValidators">A collection of <see cref="IUserValidator{TUser}"/> to validate users against.</param>
-        /// <param name="passwordValidators">A collection of <see cref="IPasswordValidator{TUser}"/> to validate passwords against.</param>
-        /// <param name="keyNormalizer">The <see cref="ILookupNormalizer"/> to use when generating index keys for users.</param>
-        /// <param name="errors">The <see cref="Microsoft.AspNetCore.Identity.IdentityErrorDescriber"/> used to provider error messages.</param>
-        /// <param name="services">The <see cref="IServiceProvider"/> used to resolve services.</param>
-        /// <param name="logger">The logger used to log messages, warnings and errors.</param>
-        public TelegramUserManager(IUserStore<TUser> store,
-            IOptions<IdentityOptions> optionsAccessor,
-            IPasswordHasher<TUser> passwordHasher,
-            IEnumerable<IUserValidator<TUser>> userValidators,
-            IEnumerable<IPasswordValidator<TUser>> passwordValidators,
-            ILookupNormalizer keyNormalizer,
-            Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors,
-            IServiceProvider services,
-            ILogger<UserManager<TUser>> logger) :
-            base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
-        {
-            _services = services;
-        }
-
         /// <summary>
         /// Gets a flag indicating whether the backing user store supports user telegram ids.
         /// </summary>
         /// <value>
         /// true if the backing user store supports user telegram ids, otherwise false.
         /// </value>
-        public virtual bool SupportsUserTelegramId
+        public static bool SupportsUserTelegramId<TUser>(this UserManager<TUser> userManager) where TUser : class
         {
-            get
-            {
-                ThrowIfDisposed();
-                return Store is IUserTelegramIdStore<TUser>;
-            }
+            ThrowIfDisposed(userManager);
+            return userManager
+                   .GetType()
+                   .GetProperty("Store", BindingFlags.NonPublic | BindingFlags.Instance)?
+                   .GetMethod?
+                   .Invoke(userManager, null) is IUserTelegramIdStore<TUser>;
         }
 
         /// <summary>
@@ -63,13 +31,14 @@ namespace Boa.Identity.Telegram
         /// <value>
         /// true if the backing user store supports Telegram tokens, otherwise false.
         /// </value>
-        public virtual bool SupportsTelegramTokens
+        public static bool SupportsTelegramTokens<TUser>(this UserManager<TUser> userManager) where TUser : class
         {
-            get
-            {
-                ThrowIfDisposed();
-                return Store is ITelegramTokenStore;
-            }
+            ThrowIfDisposed(userManager);
+            return userManager
+                   .GetType()
+                   .GetProperty("Store", BindingFlags.NonPublic | BindingFlags.Instance)?
+                   .GetMethod?
+                   .Invoke(userManager, null) is ITelegramTokenStore;
         }
 
         /// <summary>
@@ -81,28 +50,30 @@ namespace Boa.Identity.Telegram
         /// <returns>
         /// The task object containing the results of the asynchronous lookup operation, the user, if any, associated with the specified phone number.
         /// </returns>
-        public virtual async Task<TUser?> FindByPhoneNumberAsync(string phoneNumber)
+        public static async Task<TUser?> FindByPhoneNumberAsync<TUser>(this UserManager<TUser> userManager, string phoneNumber) where TUser : class
         {
-            ThrowIfDisposed();
-            var store = GetTelegramIdStore();
+            ThrowIfDisposed(userManager);
+            var store = GetTelegramIdStore(userManager);
             if (phoneNumber == null)
             {
                 throw new ArgumentNullException(nameof(phoneNumber));
             }
 
-            var user = await store.FindByPhoneNumberAsync(phoneNumber, CancellationToken).ConfigureAwait(false);
+            var cancellationToken = GetCancellationToken(userManager);
+            var user = await store.FindByPhoneNumberAsync(phoneNumber, cancellationToken).ConfigureAwait(false);
 
             // Need to potentially check all keys
-            if (user == null && Options.Stores.ProtectPersonalData)
+            if (user == null && userManager.Options.Stores.ProtectPersonalData)
             {
-                var keyRing = _services.GetService<ILookupProtectorKeyRing>();
-                var protector = _services.GetService<ILookupProtector>();
+                var services = GetServiceProvider(userManager);
+                var keyRing = services.GetService<ILookupProtectorKeyRing>();
+                var protector = services.GetService<ILookupProtector>();
                 if (keyRing != null && protector != null)
                 {
                     foreach (var key in keyRing.GetAllKeyIds())
                     {
                         var oldKey = protector.Protect(key, phoneNumber);
-                        user = await store.FindByPhoneNumberAsync(oldKey, CancellationToken).ConfigureAwait(false);
+                        user = await store.FindByPhoneNumberAsync(oldKey, cancellationToken).ConfigureAwait(false);
                         if (user != null)
                         {
                             return user;
@@ -122,27 +93,30 @@ namespace Boa.Identity.Telegram
         /// <returns>
         /// The task object containing the results of the asynchronous lookup operation, the user, if any, associated with the specified telegram id.
         /// </returns>
-        public virtual async Task<TUser?> FindByTelegramIdAsync(long telegramId, bool askToRegister = false, ITelegramBotClient? botClient = null)
+        public static async Task<TUser?> FindByTelegramIdAsync<TUser>(this UserManager<TUser> userManager, long telegramId, bool askToRegister = false, ITelegramBotClient? botClient = null) where TUser : class
         {
-            ThrowIfDisposed();
-            var store = GetTelegramIdStore();
+            ThrowIfDisposed(userManager);
+            var store = GetTelegramIdStore(userManager);
 
-            var user = await store.FindByTelegramIdAsync(telegramId, CancellationToken).ConfigureAwait(false);
+            var cancellationToken = GetCancellationToken(userManager);
+            var services = GetServiceProvider(userManager);
+            var user = await store.FindByTelegramIdAsync(telegramId, cancellationToken).ConfigureAwait(false);
 
             //capire se è possibile proteggere gli id!!!
             //capire se posso aggiungere le opzioni identityOptions.User.RequireUniqueTelegramId e identityOptions.User.RequireUniquePhoneNumber
 
             // Need to potentially check all keys
-            //if (user == null && Options.Stores.ProtectPersonalData)
+            //if (user == null && userManager.Options.Stores.ProtectPersonalData)
             //{
-            //    var keyRing = _services.GetService<ILookupProtectorKeyRing>();
-            //    var protector = _services.GetService<ILookupProtector>();
+            //    var services = GetServiceProvider(userManager);
+            //    var keyRing = services.GetService<ILookupProtectorKeyRing>();
+            //    var protector = services.GetService<ILookupProtector>();
             //    if (keyRing != null && protector != null)
             //    {
             //        foreach (var key in keyRing.GetAllKeyIds())
             //        {
             //            var oldKey = protector.Protect(key, telegramId);
-            //            user = await store.FindByTelegramIdAsync(oldKey, CancellationToken).ConfigureAwait(false);
+            //            user = await store.FindByTelegramIdAsync(oldKey, cancellationToken).ConfigureAwait(false);
             //            if (user != null)
             //            {
             //                return user;
@@ -153,7 +127,7 @@ namespace Boa.Identity.Telegram
 
             if (user == null && askToRegister && botClient != null)
             {
-                IStringLocalizer localizer = new IdentityStringLocalizer(_services, "Boa.Identity.ResetPasswordService");
+                IStringLocalizer localizer = new IdentityStringLocalizer(services, "Boa.Identity.ResetPasswordService");
 
                 var msg = await botClient.SendTextMessageAsync(
                     chatId: telegramId,
@@ -165,7 +139,7 @@ namespace Boa.Identity.Telegram
                 ).ConfigureAwait(false);
 
                 // save messageid to check response from user
-                await SetTelegramTokenAsync(telegramId, "[boaidentity]", "RegisterUserMessage", msg.MessageId.ToString()).ConfigureAwait(false);
+                await userManager.SetTelegramTokenAsync(telegramId, "[boaidentity]", "RegisterUserMessage", msg.MessageId.ToString()).ConfigureAwait(false);
             }
 
             return user;
@@ -176,15 +150,15 @@ namespace Boa.Identity.Telegram
         /// </summary>
         /// <param name="user">The user whose telegram id should be retrieved.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the user's telegram id, if any.</returns>
-        public virtual async Task<long?> GetTelegramIdAsync(TUser user)
+        public static async Task<long?> GetTelegramIdAsync<TUser>(this UserManager<TUser> userManager, TUser user) where TUser : class
         {
-            ThrowIfDisposed();
-            var store = GetTelegramIdStore();
+            ThrowIfDisposed(userManager);
+            var store = GetTelegramIdStore(userManager);
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            return await store.GetTelegramIdAsync(user, CancellationToken).ConfigureAwait(false);
+            return await store.GetTelegramIdAsync(user, GetCancellationToken(userManager)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -196,17 +170,17 @@ namespace Boa.Identity.Telegram
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
         /// of the operation.
         /// </returns>
-        public virtual async Task<IdentityResult> SetTelegramIdAsync(TUser user, long? telegramId)
+        public static async Task<IdentityResult> SetTelegramIdAsync<TUser>(this UserManager<TUser> userManager, TUser user, long? telegramId) where TUser : class
         {
-            ThrowIfDisposed();
-            var store = GetTelegramIdStore();
+            ThrowIfDisposed(userManager);
+            var store = GetTelegramIdStore(userManager);
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            await store.SetTelegramIdAsync(user, telegramId, CancellationToken).ConfigureAwait(false);
-            return await UpdateSecurityStampAsync(user).ConfigureAwait(false);
+            await store.SetTelegramIdAsync(user, telegramId, GetCancellationToken(userManager)).ConfigureAwait(false);
+            return await userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -216,10 +190,10 @@ namespace Boa.Identity.Telegram
         /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
         /// <param name="tokenName">The name of the token.</param>
         /// <returns>The authentication token for a user</returns>
-        public virtual Task<string?> GetTelegramTokenAsync(long telegramId, string loginProvider, string tokenName)
+        public static Task<string?> GetTelegramTokenAsync<TUser>(this UserManager<TUser> userManager, long telegramId, string loginProvider, string tokenName) where TUser : class
         {
-            ThrowIfDisposed();
-            var store = GetTelegramTokenStore();
+            ThrowIfDisposed(userManager);
+            var store = GetTelegramTokenStore(userManager);
             if (loginProvider == null)
             {
                 throw new ArgumentNullException(nameof(loginProvider));
@@ -229,7 +203,7 @@ namespace Boa.Identity.Telegram
                 throw new ArgumentNullException(nameof(tokenName));
             }
 
-            return store.GetTelegramTokenAsync(telegramId, loginProvider, tokenName, CancellationToken);
+            return store.GetTelegramTokenAsync(telegramId, loginProvider, tokenName, GetCancellationToken(userManager));
         }
 
         /// <summary>
@@ -238,16 +212,16 @@ namespace Boa.Identity.Telegram
         /// <param name="telegramId"></param>
         /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
         /// <returns>The authentication token for a user</returns>
-        public virtual Task<(string Name, string? Value)[]> GetAllTelegramTokensAsync(long telegramId, string loginProvider)
+        public static Task<(string Name, string? Value)[]> GetAllTelegramTokensAsync<TUser>(this UserManager<TUser> userManager, long telegramId, string loginProvider) where TUser : class
         {
-            ThrowIfDisposed();
-            var store = GetTelegramTokenStore();
+            ThrowIfDisposed(userManager);
+            var store = GetTelegramTokenStore(userManager);
             if (loginProvider == null)
             {
                 throw new ArgumentNullException(nameof(loginProvider));
             }
 
-            return store.GetAllTelegramTokensAsync(telegramId, loginProvider, CancellationToken);
+            return store.GetAllTelegramTokensAsync(telegramId, loginProvider, GetCancellationToken(userManager));
         }
 
         /// <summary>
@@ -258,10 +232,10 @@ namespace Boa.Identity.Telegram
         /// <param name="tokenName">The name of the token.</param>
         /// <param name="tokenValue">The value of the token.</param>
         /// <returns>Whether the user was successfully updated.</returns>
-        public virtual async Task<IdentityResult> SetTelegramTokenAsync(long telegramId, string loginProvider, string tokenName, string? tokenValue)
+        public static async Task<IdentityResult> SetTelegramTokenAsync<TUser>(this UserManager<TUser> userManager, long telegramId, string loginProvider, string tokenName, string? tokenValue) where TUser : class
         {
-            ThrowIfDisposed();
-            var store = GetTelegramTokenStore();
+            ThrowIfDisposed(userManager);
+            var store = GetTelegramTokenStore(userManager);
             if (loginProvider == null)
             {
                 throw new ArgumentNullException(nameof(loginProvider));
@@ -272,8 +246,9 @@ namespace Boa.Identity.Telegram
             }
 
             // REVIEW: should updating any tokens affect the security stamp?
-            await store.SetTelegramTokenAsync(telegramId, loginProvider, tokenName, tokenValue, CancellationToken).ConfigureAwait(false);
-            return await store.SaveChangesAsync(CancellationToken).ConfigureAwait(false);
+            var cancellationToken = GetCancellationToken(userManager);
+            await store.SetTelegramTokenAsync(telegramId, loginProvider, tokenName, tokenValue, cancellationToken).ConfigureAwait(false);
+            return await store.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -283,10 +258,10 @@ namespace Boa.Identity.Telegram
         /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
         /// <param name="tokenName">The name of the token.</param>
         /// <returns>Whether a token was removed.</returns>
-        public virtual async Task<IdentityResult> RemoveTelegramTokenAsync(long telegramId, string loginProvider, string tokenName)
+        public static async Task<IdentityResult> RemoveTelegramTokenAsync<TUser>(this UserManager<TUser> userManager, long telegramId, string loginProvider, string tokenName) where TUser : class
         {
-            ThrowIfDisposed();
-            var store = GetTelegramTokenStore();
+            ThrowIfDisposed(userManager);
+            var store = GetTelegramTokenStore(userManager);
             if (loginProvider == null)
             {
                 throw new ArgumentNullException(nameof(loginProvider));
@@ -296,26 +271,67 @@ namespace Boa.Identity.Telegram
                 throw new ArgumentNullException(nameof(tokenName));
             }
 
-            await store.RemoveTelegramTokenAsync(telegramId, loginProvider, tokenName, CancellationToken).ConfigureAwait(false);
-            return await store.SaveChangesAsync(CancellationToken).ConfigureAwait(false);
+            var cancellationToken = GetCancellationToken(userManager);
+            await store.RemoveTelegramTokenAsync(telegramId, loginProvider, tokenName, cancellationToken).ConfigureAwait(false);
+            return await store.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        private IUserTelegramIdStore<TUser> GetTelegramIdStore()
+        private static void ThrowIfDisposed<TUser>(UserManager<TUser> userManager) where TUser : class
         {
-            if (Store is not IUserTelegramIdStore<TUser> telegramIdStore)
+            MethodInfo throwIfDisposed = userManager.GetType().GetMethod("ThrowIfDisposed", BindingFlags.NonPublic | BindingFlags.Instance)
+                                         ?? throw new ObjectDisposedException(userManager.GetType().Name);
+            throwIfDisposed.Invoke(userManager, null);
+        }
+
+        private static IUserTelegramIdStore<TUser> GetTelegramIdStore<TUser>(UserManager<TUser> userManager) where TUser : class
+        {
+            if (userManager
+                .GetType()
+                .GetProperty("Store", BindingFlags.NonPublic | BindingFlags.Instance)?
+                .GetMethod?
+                .Invoke(userManager, null) is not IUserTelegramIdStore<TUser> telegramIdStore)
             {
                 throw new NotSupportedException("Store does not implement IUserTelegramIdStore<TUser>.");
             }
             return telegramIdStore;
         }
 
-        private ITelegramTokenStore GetTelegramTokenStore()
+        private static ITelegramTokenStore GetTelegramTokenStore<TUser>(UserManager<TUser> userManager) where TUser : class
         {
-            if (Store is not ITelegramTokenStore telegramTokenStore)
+            if (userManager
+                .GetType()
+                .GetProperty("Store", BindingFlags.NonPublic | BindingFlags.Instance)?
+                .GetMethod?
+                .Invoke(userManager, null) is not ITelegramTokenStore telegramTokenStore)
             {
                 throw new NotSupportedException("Store does not implement ITelegramTokenStore.");
             }
             return telegramTokenStore;
+        }
+
+        private static CancellationToken GetCancellationToken<TUser>(UserManager<TUser> userManager) where TUser : class
+        {
+            if (userManager
+                .GetType()
+                .GetProperty("CancellationToken", BindingFlags.NonPublic | BindingFlags.Instance)?
+                .GetMethod?
+                .Invoke(userManager, null) is not CancellationToken cancellationToken)
+            {
+                throw new MissingMemberException("UserManager does not contain CancellationToken property.");
+            }
+            return cancellationToken;
+        }
+
+        private static IServiceProvider GetServiceProvider<TUser>(UserManager<TUser> userManager) where TUser : class
+        {
+            if (userManager
+                .GetType()
+                .GetField("_services", BindingFlags.NonPublic | BindingFlags.Instance)?
+                .GetValue(userManager) is not IServiceProvider services)
+            {
+                throw new MissingMemberException("UserManager does not contain _services field.");
+            }
+            return services;
         }
     }
 }
