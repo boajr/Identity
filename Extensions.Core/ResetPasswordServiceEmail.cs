@@ -73,7 +73,7 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
     /// <param name="data">A DataModelType object with data entered by user.</param>
     /// <returns>
     /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the reset password request
-    /// is send, otherwise returns <c>false</c>.
+    /// is sent, otherwise returns <c>false</c>.
     /// </returns>
     protected sealed override async Task<bool> ProcessAsync(ResetPasswordServiceEmailDataModel data)
     {

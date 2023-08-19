@@ -38,7 +38,7 @@ public interface IResetPasswordService
     /// </param>
     /// <returns>
     /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the reset password request
-    /// is send, otherwise returns <c>false</c>.
+    /// is sent, otherwise returns <c>false</c>.
     /// </returns>
     Task<bool> SendResetPasswordRequest(ActionContext context, object data, string prefix = "");
 }
