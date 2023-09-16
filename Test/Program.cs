@@ -17,7 +17,9 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddBoaIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddBoaResetPasswordServiceDefaultUIEmail();
+    .AddBoaResetPasswordServiceDefaultUIEmail()
+    .AddBoaUser2FAServiceWithAuthenticator()
+    .AddBoaUser2FAServiceWithDefaultUIEmail();
 builder.Services.AddRazorPages();
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();  // forse va bene anche scoped o singleton???
