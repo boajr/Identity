@@ -17,10 +17,7 @@ public static class IdentityBuilderExtensions
     /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
     public static IdentityBuilder AddBoaResetPasswordServiceTelegram(this IdentityBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         if (FindGenericBaseType(builder.UserType, typeof(IdentityTelegramUser<>)) == null)
         {

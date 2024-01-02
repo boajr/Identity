@@ -24,4 +24,5 @@ namespace TestTelegram.Pages
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
         }
     }
+
 }

@@ -17,11 +17,9 @@ public static class UserManagerExtensions
     public static async Task<IdentityResult> SetTwoFactorProviderAsync<TUser>(this UserManager<TUser> userManager, TUser user, string provider) where TUser : class
     {
         ThrowIfDisposed(userManager);
+        ArgumentNullException.ThrowIfNull(user);
+
         var store = GetAuthenticationTokenStore(userManager);
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
         await store.SetTokenAsync(user, InternalLoginProvider, TwoFactorProviderTokenName, provider, GetCancellationToken(userManager)).ConfigureAwait(false);
         //await userManager.UpdateSecurityStampInternal(user).ConfigureAwait(false);
         return await userManager.UpdateAsync(user).ConfigureAwait(false);
@@ -35,11 +33,9 @@ public static class UserManagerExtensions
     public static async Task<IdentityResult> RemoveTwoFactorProviderAsync<TUser>(this UserManager<TUser> userManager, TUser user) where TUser : class
     {
         ThrowIfDisposed(userManager);
+        ArgumentNullException.ThrowIfNull(user);
+
         var store = GetAuthenticationTokenStore(userManager);
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
         await store.RemoveTokenAsync(user, InternalLoginProvider, TwoFactorProviderTokenName, GetCancellationToken(userManager)).ConfigureAwait(false);
         //await userManager.UpdateSecurityStampInternal(user).ConfigureAwait(false);
         return await userManager.UpdateAsync(user).ConfigureAwait(false);
@@ -53,11 +49,9 @@ public static class UserManagerExtensions
     public static Task<string?> GetTwoFactorProviderAsync<TUser>(this UserManager<TUser> userManager, TUser user) where TUser : class
     {
         ThrowIfDisposed(userManager);
+        ArgumentNullException.ThrowIfNull(user);
+
         var store = GetAuthenticationTokenStore(userManager);
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
         return store.GetTokenAsync(user, InternalLoginProvider, TwoFactorProviderTokenName, GetCancellationToken(userManager));
     }
 

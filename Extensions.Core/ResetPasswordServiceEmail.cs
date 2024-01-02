@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.WebUtilities;
 using System.ComponentModel.DataAnnotations;
@@ -27,8 +28,9 @@ public abstract class ResetPasswordServiceEmail : ResetPasswordServiceEmail<Iden
 {
     public ResetPasswordServiceEmail(IServiceProvider serviceProvider,
                                      IObjectModelValidator modelValidator,
-                                     UserManager<IdentityUser> userManager)
-        : base(serviceProvider, modelValidator, userManager)
+                                     UserManager<IdentityUser> userManager,
+                                     IEmailSender emailSender)
+        : base(serviceProvider, modelValidator, userManager, emailSender)
     { }
 }
 
@@ -40,6 +42,7 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
     where TUser : class
 {
     protected readonly UserManager<TUser> _userManager;
+    private readonly IEmailSender _emailSender;
 
     /// <inheritdoc />
     public override string ServiceName => "Email";
@@ -60,10 +63,12 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
     /// <param name="userManager">The <see cref="UserManager{TUser}"/> to retrieve user properties from.</param>
     public ResetPasswordServiceEmail(IServiceProvider serviceProvider,
                                      IObjectModelValidator modelValidator,
-                                     UserManager<TUser> userManager)
+                                     UserManager<TUser> userManager,
+                                     IEmailSender emailSender)
         : base(serviceProvider, modelValidator)
     {
         _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        _emailSender = emailSender;
     }
 
     /// <summary>
@@ -95,7 +100,7 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         string callbackUrl = GetCallbackUrl(code);
 
-        await SendEmailAsync(
+        await _emailSender.SendEmailAsync(
             data.Email,
             Localizer["Reset Password"],
             Localizer["Please reset your password by <a href='{0}'>clicking here</a>.", HtmlEncoder.Default.Encode(callbackUrl)]).ConfigureAwait(false);
@@ -109,13 +114,4 @@ public abstract class ResetPasswordServiceEmail<TUser> : ResetPasswordService<Re
     /// <param name="token">The token to send to user.</param>
     /// <returns>A string with the url to send to user.</returns>
     protected abstract string GetCallbackUrl(string token);
-
-    /// <summary>
-    /// Sends an email to the specified <paramref name="email"/> address as an asynchronous operation.
-    /// </summary>
-    /// <param name="email">The email address to send email.</param>
-    /// <param name="subject">The subject of the eamil.</param>
-    /// <param name="htmlMessage">The body of the email in html format.</param>
-    /// <returns>A <see cref="Task"/> that completes when mail is sent.</returns>
-    protected abstract Task SendEmailAsync(string email, string subject, string htmlMessage);
 }

@@ -1,13 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// nella signInManager.cs non c'è neanche un ConfigureAwait(false), quindi non li metto neanche io
+using Microsoft.AspNetCore.Identity;
 using System.Reflection;
-using System.Runtime.ConstrainedExecution;
-using System.Runtime.InteropServices;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Boa.Identity;
 
@@ -25,46 +18,46 @@ public static class SignInManagerExtensions
     /// for the sign-in attempt.</returns>
     public static async Task<SignInResult> TwoFactorSignInWithTokenAsync<TUser>(this SignInManager<TUser> signInManager, IUser2FAServiceWithToken<TUser> service, string code, bool isPersistent, bool rememberClient, bool rememberService) where TUser : class
     {
-        var twoFactorInfo = await RetrieveTwoFactorInfoAsync(signInManager).ConfigureAwait(false);
+        var twoFactorInfo = await RetrieveTwoFactorInfoAsync(signInManager);
         if (twoFactorInfo == null)
         {
             return SignInResult.Failed;
         }
-        if (twoFactorInfo.GetType().GetProperty("UserId")?.GetValue(twoFactorInfo) is not string userId)
+
+        if (twoFactorInfo.GetType().GetProperty("User")?.GetValue(twoFactorInfo) is not TUser user)
         {
             return SignInResult.Failed;
         }
-
-        var user = await signInManager.UserManager.FindByIdAsync(userId).ConfigureAwait(false);
-        if (user == null)
-        {
-            return SignInResult.Failed;
-        }
-
-        var error = await PreSignInCheck(signInManager, user).ConfigureAwait(false);
+        var error = await PreSignInCheck(signInManager, user);
         if (error != null)
         {
             return error;
         }
-        if (await service.ValidateTokenAsync(code, signInManager.UserManager, user).ConfigureAwait(false))
+
+        if (await service.ValidateTokenAsync(code, signInManager.UserManager, user))
         {
-            var result = await DoTwoFactorSignInAsync(signInManager, user, twoFactorInfo, isPersistent, rememberClient).ConfigureAwait(false);
+            var result = await DoTwoFactorSignInAsync(signInManager, user, twoFactorInfo, isPersistent, rememberClient);
             // Se richiesto salvo il servizio di autenticazione usato
             if (result.Succeeded && rememberService)
             {
-                await signInManager.UserManager.SetTwoFactorProviderAsync(user, service.ServiceName).ConfigureAwait(false); 
+                await signInManager.UserManager.SetTwoFactorProviderAsync(user, service.ServiceName); 
             }
             return result;
         }
         // If the token is incorrect, record the failure which also may cause the user to be locked out
         if (signInManager.UserManager.SupportsUserLockout)
         {
-            var incrementLockoutResult = await signInManager.UserManager.AccessFailedAsync(user).ConfigureAwait(false) ?? IdentityResult.Success;
+            var incrementLockoutResult = await signInManager.UserManager.AccessFailedAsync(user) ?? IdentityResult.Success;
             if (!incrementLockoutResult.Succeeded)
             {
                 // Return the same failure we do when resetting the lockout fails after a correct two factor code.
                 // This is currently redundant, but it's here in case the code gets copied elsewhere.
                 return SignInResult.Failed;
+            }
+
+            if (await signInManager.UserManager.IsLockedOutAsync(user))
+            {
+                return await LockedOut(signInManager, user);
             }
         }
         return SignInResult.Failed;
@@ -80,8 +73,20 @@ public static class SignInManagerExtensions
             return null;
         }
         
-        await task.ConfigureAwait(false);
+        await task;
         return task.GetType().GetProperty("Result")?.GetValue(task);
+    }
+
+    private static Task<SignInResult> LockedOut<TUser>(SignInManager<TUser> signInManager, TUser user) where TUser : class
+    {
+        if (signInManager
+            .GetType()
+            .GetMethod("LockedOut", BindingFlags.NonPublic | BindingFlags.Instance)?
+            .Invoke(signInManager, new object[] { user }) is not Task<SignInResult> lochedOut)
+        {
+            return Task.FromResult<SignInResult>(SignInResult.Failed);
+        }
+        return lochedOut;
     }
 
     private static Task<SignInResult?> PreSignInCheck<TUser>(SignInManager<TUser> signInManager, TUser user) where TUser : class

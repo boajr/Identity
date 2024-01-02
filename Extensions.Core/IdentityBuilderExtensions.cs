@@ -19,15 +19,8 @@ public static class IdentityBuilderExtensions
     public static IdentityBuilder AddBoaResetPasswordService(this IdentityBuilder builder,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (implementationType == null)
-        {
-            throw new ArgumentNullException(nameof(implementationType));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(implementationType);
 
         if (!typeof(IResetPasswordService).IsAssignableFrom(implementationType))
         {
@@ -55,23 +48,16 @@ public static class IdentityBuilderExtensions
     /// <param name="implementationType">The type of the <see cref="IUserTwoFactorTokenProvider{TUser}"/> to add.</param>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
     /// <exception cref="ArgumentNullException"></exception>
-    public static IdentityBuilder AddBoaUser2FAService(this IdentityBuilder builder, 
+    public static IdentityBuilder AddBoaUser2FAService(this IdentityBuilder builder,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (implementationType == null)
-        {
-            throw new ArgumentNullException(nameof(implementationType));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(implementationType);
 
         Type type = typeof(IUser2FAService<>).MakeGenericType(builder.UserType);
         if (!type.IsAssignableFrom(implementationType))
         {
-            throw new InvalidOperationException(implementationType.Name + " does not implement IUser2FAService<"+ builder.UserType.Name + ">.");
+            throw new InvalidOperationException(implementationType.Name + " does not implement IUser2FAService<" + builder.UserType.Name + ">.");
         }
 
         builder.Services.AddTransient(type, implementationType);
@@ -96,4 +82,26 @@ public static class IdentityBuilderExtensions
     /// <exception cref="ArgumentNullException"></exception>
     public static IdentityBuilder AddBoaUser2FAServiceWithAuthenticator(this IdentityBuilder builder)
         => AddBoaUser2FAService(builder, typeof(User2FAServiceWithAuthenticator<>).MakeGenericType(builder.UserType));
+
+    /// <summary>
+    /// Adds a two factor authentication service that uses the <see cref="EmailTokenProvider<>"/> as token provider.
+    /// </summary>
+    /// <remarks>
+    /// In order to use this service, it's needed to add an <see cref="IEmailSender"/>.
+    /// </remarks>
+    /// <param name="builder">The current <see cref="IdentityBuilder"/> instance.</param>
+    /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    public static IdentityBuilder AddBoaUser2FAServiceWithEmail(this IdentityBuilder builder)
+        => AddBoaUser2FAService(builder, typeof(User2FAServiceWithEmail<>).MakeGenericType(builder.UserType));
+
+    /// <summary>
+    /// Adds a two factor authentication service that uses the <see cref="DefaultPhoneProvider<>"/> as token provider.
+    /// </summary>
+    /// <remarks>
+    /// In order to use this service, it's needed to add an <see cref="ISmsSender"/>.
+    /// </remarks>
+    /// <param name="builder">The current <see cref="IdentityBuilder"/> instance.</param>
+    /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    public static IdentityBuilder AddBoaUser2FAServiceWithDefaultUISms(this IdentityBuilder builder)
+        => AddBoaUser2FAService(builder, typeof(User2FAServiceWithSms<>).MakeGenericType(builder.UserType));
 }

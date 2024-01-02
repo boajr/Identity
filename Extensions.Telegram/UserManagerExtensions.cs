@@ -53,12 +53,9 @@ namespace Boa.Identity.Telegram
         public static async Task<TUser?> FindByPhoneNumberAsync<TUser>(this UserManager<TUser> userManager, string phoneNumber) where TUser : class
         {
             ThrowIfDisposed(userManager);
-            var store = GetTelegramIdStore(userManager);
-            if (phoneNumber == null)
-            {
-                throw new ArgumentNullException(nameof(phoneNumber));
-            }
+            ArgumentNullException.ThrowIfNull(phoneNumber);
 
+            var store = GetTelegramIdStore(userManager);
             var cancellationToken = GetCancellationToken(userManager);
             var user = await store.FindByPhoneNumberAsync(phoneNumber, cancellationToken).ConfigureAwait(false);
 
@@ -153,11 +150,9 @@ namespace Boa.Identity.Telegram
         public static async Task<long?> GetTelegramIdAsync<TUser>(this UserManager<TUser> userManager, TUser user) where TUser : class
         {
             ThrowIfDisposed(userManager);
+            ArgumentNullException.ThrowIfNull(user);
+
             var store = GetTelegramIdStore(userManager);
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
             return await store.GetTelegramIdAsync(user, GetCancellationToken(userManager)).ConfigureAwait(false);
         }
 
@@ -173,12 +168,9 @@ namespace Boa.Identity.Telegram
         public static async Task<IdentityResult> SetTelegramIdAsync<TUser>(this UserManager<TUser> userManager, TUser user, long? telegramId) where TUser : class
         {
             ThrowIfDisposed(userManager);
-            var store = GetTelegramIdStore(userManager);
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
+            var store = GetTelegramIdStore(userManager);
             await store.SetTelegramIdAsync(user, telegramId, GetCancellationToken(userManager)).ConfigureAwait(false);
             return await userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
         }
@@ -193,16 +185,10 @@ namespace Boa.Identity.Telegram
         public static Task<string?> GetTelegramTokenAsync<TUser>(this UserManager<TUser> userManager, long telegramId, string loginProvider, string tokenName) where TUser : class
         {
             ThrowIfDisposed(userManager);
-            var store = GetTelegramTokenStore(userManager);
-            if (loginProvider == null)
-            {
-                throw new ArgumentNullException(nameof(loginProvider));
-            }
-            if (tokenName == null)
-            {
-                throw new ArgumentNullException(nameof(tokenName));
-            }
+            ArgumentNullException.ThrowIfNull(loginProvider);
+            ArgumentNullException.ThrowIfNull(tokenName);
 
+            var store = GetTelegramTokenStore(userManager);
             return store.GetTelegramTokenAsync(telegramId, loginProvider, tokenName, GetCancellationToken(userManager));
         }
 
@@ -215,12 +201,9 @@ namespace Boa.Identity.Telegram
         public static Task<(string Name, string? Value)[]> GetAllTelegramTokensAsync<TUser>(this UserManager<TUser> userManager, long telegramId, string loginProvider) where TUser : class
         {
             ThrowIfDisposed(userManager);
-            var store = GetTelegramTokenStore(userManager);
-            if (loginProvider == null)
-            {
-                throw new ArgumentNullException(nameof(loginProvider));
-            }
+            ArgumentNullException.ThrowIfNull(loginProvider);
 
+            var store = GetTelegramTokenStore(userManager);
             return store.GetAllTelegramTokensAsync(telegramId, loginProvider, GetCancellationToken(userManager));
         }
 
@@ -235,17 +218,11 @@ namespace Boa.Identity.Telegram
         public static async Task<IdentityResult> SetTelegramTokenAsync<TUser>(this UserManager<TUser> userManager, long telegramId, string loginProvider, string tokenName, string? tokenValue) where TUser : class
         {
             ThrowIfDisposed(userManager);
-            var store = GetTelegramTokenStore(userManager);
-            if (loginProvider == null)
-            {
-                throw new ArgumentNullException(nameof(loginProvider));
-            }
-            if (tokenName == null)
-            {
-                throw new ArgumentNullException(nameof(tokenName));
-            }
+            ArgumentNullException.ThrowIfNull(loginProvider);
+            ArgumentNullException.ThrowIfNull(tokenName);
 
             // REVIEW: should updating any tokens affect the security stamp?
+            var store = GetTelegramTokenStore(userManager);
             var cancellationToken = GetCancellationToken(userManager);
             await store.SetTelegramTokenAsync(telegramId, loginProvider, tokenName, tokenValue, cancellationToken).ConfigureAwait(false);
             return await store.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -261,16 +238,10 @@ namespace Boa.Identity.Telegram
         public static async Task<IdentityResult> RemoveTelegramTokenAsync<TUser>(this UserManager<TUser> userManager, long telegramId, string loginProvider, string tokenName) where TUser : class
         {
             ThrowIfDisposed(userManager);
-            var store = GetTelegramTokenStore(userManager);
-            if (loginProvider == null)
-            {
-                throw new ArgumentNullException(nameof(loginProvider));
-            }
-            if (tokenName == null)
-            {
-                throw new ArgumentNullException(nameof(tokenName));
-            }
+            ArgumentNullException.ThrowIfNull(loginProvider);
+            ArgumentNullException.ThrowIfNull(tokenName);
 
+            var store = GetTelegramTokenStore(userManager);
             var cancellationToken = GetCancellationToken(userManager);
             await store.RemoveTelegramTokenAsync(telegramId, loginProvider, tokenName, cancellationToken).ConfigureAwait(false);
             return await store.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

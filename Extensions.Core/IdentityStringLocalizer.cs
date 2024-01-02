@@ -13,16 +13,12 @@ namespace Boa.Identity
         {
             get
             {
+                ArgumentNullException.ThrowIfNull(name);
+
                 if (_localizer != null)
                 {
                     return _localizer[name];
                 }
-
-                if (name == null)
-                {
-                    throw new ArgumentNullException(nameof(name));
-                }
-
                 return new LocalizedString(name, name, false);
             }
         }
@@ -31,16 +27,12 @@ namespace Boa.Identity
         {
             get
             {
+                ArgumentNullException.ThrowIfNull(name);
+
                 if (_localizer != null)
                 {
                     return _localizer[name, arguments];
                 }
-
-                if (name == null)
-                {
-                    throw new ArgumentNullException(nameof(name));
-                }
-
                 return new LocalizedString(name, string.Format(CultureInfo.CurrentCulture, name, arguments), false);
             }
         }

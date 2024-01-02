@@ -125,11 +125,7 @@ public class TelegramUserStore<TUser, TRole, TContext, [DynamicallyAccessedMembe
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
-        return Task.FromResult(user.TelegramId);
+        return user == null ? throw new ArgumentNullException(nameof(user)) : Task.FromResult(user.TelegramId);
     }
 
     /// <summary>
@@ -142,10 +138,7 @@ public class TelegramUserStore<TUser, TRole, TContext, [DynamicallyAccessedMembe
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
         user.TelegramId = telegramId;
         return Task.CompletedTask;
     }

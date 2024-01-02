@@ -169,30 +169,4 @@ public static class IdentityBuilderUIExtensions_BOA
     {
         return builder.AddBoaResetPasswordService(typeof(ResetPasswordServiceDefaultUIEmail<>).MakeGenericType(builder.UserType));
     }
-
-    /// <summary>
-    /// Adds an  <see cref="IUser2FAService"/> that uses the <see cref="User2FAServiceWithDefaultUIEmail<>"/> as token provider.
-    /// </summary>
-    /// <remarks>
-    /// In order to use this service, it's needed to add an <see cref="IEmailSender"/>.
-    /// </remarks>
-    /// <param name="builder">The <see cref="IdentityBuilder"/>.</param>
-    /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-    public static IdentityBuilder AddBoaUser2FAServiceWithDefaultUIEmail(this IdentityBuilder builder)
-    { 
-        return builder.AddBoaUser2FAService(typeof(User2FAServiceWithDefaultUIEmail<>).MakeGenericType(builder.UserType));
-    }
-
-    /// <summary>
-    /// Adds an  <see cref="IUser2FAService"/> that uses the <see cref="User2FAServiceWithDefaultUISms<>"/> as token provider.
-    /// </summary>
-    /// <remarks>
-    /// In order to use this service, it's needed to add an <see cref="ISmsSender"/>.
-    /// </remarks>
-    /// <param name="builder">The <see cref="IdentityBuilder"/>.</param>
-    /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-    public static IdentityBuilder AddBoaUser2FAServiceWithDefaultUISms(this IdentityBuilder builder)
-    {
-        return builder.AddBoaUser2FAService(typeof(User2FAServiceWithDefaultUISms<>).MakeGenericType(builder.UserType));
-    }
 }

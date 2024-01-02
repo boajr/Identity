@@ -19,7 +19,7 @@ builder.Services.AddBoaIdentity<IdentityUser>(options => options.SignIn.RequireC
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddBoaResetPasswordServiceDefaultUIEmail()
     .AddBoaUser2FAServiceWithAuthenticator()
-    .AddBoaUser2FAServiceWithDefaultUIEmail();
+    .AddBoaUser2FAServiceWithEmail();
 builder.Services.AddRazorPages();
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();  // forse va bene anche scoped o singleton???

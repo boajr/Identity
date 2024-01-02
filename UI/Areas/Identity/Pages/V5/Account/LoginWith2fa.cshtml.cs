@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Boa.Identity.UI.V5.Pages.Account.Internal;
 
@@ -131,7 +132,7 @@ internal sealed class LoginWith2faModel<TUser> : LoginWith2faModel where TUser :
         _logger = logger;
     }
 
-    public override async Task<IActionResult> OnGetAsync(bool rememberMe, string? returnUrl = null)
+    public override async Task<IActionResult> OnGetAsync(bool rememberMe, [StringSyntax(StringSyntaxAttribute.Uri)] string? returnUrl = null)
     {
         ReturnUrl = returnUrl;
         RememberMe = rememberMe;
@@ -282,7 +283,7 @@ internal sealed class LoginWith2faModel<TUser> : LoginWith2faModel where TUser :
 
     private async Task<List<IUser2FAService<TUser>>> GetValidTwoFactorServicesAsync(TUser user)
     {
-        List<IUser2FAService<TUser>> services = new();
+        List<IUser2FAService<TUser>> services = [];
         foreach (var service in _user2FAServices)
         {
             if (await service.IsSuitableAsync(_userManager, user))

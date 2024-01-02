@@ -36,7 +36,7 @@ namespace Boa.Identity.Telegram
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
-        private readonly string[] Actions = { "RegisterUserMessage", "ResetPasswordMessage" };
+        private readonly string[] Actions = ["RegisterUserMessage", "ResetPasswordMessage"];
 
         public async Task<bool> HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {

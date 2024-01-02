@@ -24,7 +24,7 @@ namespace Boa.Identity.UI
             options.Conventions.AddAreaFolderApplicationModelConvention(
                 IdentityUIDefaultAreaName,
                 "/",
-                pam => convention.Apply(pam));
+                convention.Apply);
         }
     }
 }

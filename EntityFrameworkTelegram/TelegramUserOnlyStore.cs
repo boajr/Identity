@@ -99,11 +99,7 @@ public class TelegramUserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
-        return Task.FromResult(user.TelegramId);
+        return user == null ? throw new ArgumentNullException(nameof(user)) : Task.FromResult(user.TelegramId);
     }
 
     /// <summary>
@@ -116,10 +112,7 @@ public class TelegramUserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
         user.TelegramId = telegramId;
         return Task.CompletedTask;
     }

@@ -2,11 +2,18 @@
 
 namespace Boa.Identity;
 
-public abstract class User2FAServiceWithSms<TUser> : User2FAServiceWithTokenProvider<TUser>
+public class User2FAServiceWithSms<TUser> : User2FAServiceWithTokenProvider<TUser>
     where TUser : class
 {
-    public User2FAServiceWithSms(IServiceProvider serviceProvider)
-        : base(serviceProvider, TokenOptions.DefaultEmailProvider) { }
+    private readonly ISmsSender _smsSender;
+
+    public User2FAServiceWithSms(IServiceProvider serviceProvider, ISmsSender smsSender)
+        : base(serviceProvider, TokenOptions.DefaultPhoneProvider)
+    {
+        _smsSender = smsSender;
+    }
+
+    public override bool NeedToSendToken => true;
 
     /// <summary>
     /// Asynchronously process the send token request after that the <paramref name="token"/> is generated.
@@ -27,18 +34,10 @@ public abstract class User2FAServiceWithSms<TUser> : User2FAServiceWithTokenProv
             return false;
         }
 
-        await SendSmsAsync(
+        await _smsSender.SendSmsAsync(
             phone,
             Localizer["Please, to authenticate use this code {0}", token]).ConfigureAwait(false);
 
         return true;
     }
-
-    /// <summary>
-    /// Sends a sms to the specified <paramref name="phoneNumber"/> as an asynchronous operation.
-    /// </summary>
-    /// <param name="email">The phone number to send sms.</param>
-    /// <param name="message">The text of the sms.</param>
-    /// <returns>A <see cref="Task"/> that completes when sms is sent.</returns>
-    protected abstract Task SendSmsAsync(string phoneNumber, string message);
 }

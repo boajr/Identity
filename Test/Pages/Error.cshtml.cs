@@ -24,4 +24,5 @@ namespace Test.Pages
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
         }
     }
+
 }
