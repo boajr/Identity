@@ -24,7 +24,9 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddBoaIdentity<IdentityTelegramUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddBoaEntityFrameworkTelegramStores<ApplicationDbContext>()
     .AddBoaResetPasswordServiceDefaultUIEmail()
-    .AddBoaResetPasswordServiceTelegram();
+    .AddBoaResetPasswordServiceTelegram()
+    .AddBoaUser2FAServiceWithAuthenticator()
+    .AddBoaUser2FAServiceWithEmail();
 builder.Services.AddRazorPages();
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();  // forse va bene anche scoped o singleton???
