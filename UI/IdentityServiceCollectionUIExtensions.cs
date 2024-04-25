@@ -50,6 +50,7 @@ public static class IdentityServiceCollectionUIExtensions
             .AddBoaUI()
             .AddDefaultUI()
             .AddDefaultTokenProviders()
+            .AddSignInManager<Boa.Identity.SignInManager<TUser>>()
             .AddErrorDescriber<Boa.Identity.IdentityErrorDescriber>();
     }
 }

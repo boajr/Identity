@@ -144,6 +144,9 @@ internal sealed class LoginWith2faModel<TUser> : LoginWith2faModel where TUser :
         List<IUser2FAService<TUser>> services = await GetValidTwoFactorServicesAsync(user);
         if (services.Count == 0)
         {
+            // TODO - scegliere una di queste due funzioni
+            // 1. estrarre una lista di tutti i servizi di 2fa e una volta scelto girare l'utente alla pagina di configurazione
+            // 2. inviare l'utente alla pagina di configurazione del 2fa e non permettergli di uscire finche non l'ha configurato
             return Page();
         }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace Boa.Identity;
@@ -7,6 +8,32 @@ public static class UserManagerExtensions
 {
     private const string InternalLoginProvider = "[BoaUserStore]";
     private const string TwoFactorProviderTokenName = "TwoFactorProvider";
+
+
+    /// <summary>
+    /// Gets a list of valid two factor authentication services for the specified <paramref name="user"/>,
+    /// as an asynchronous operation.
+    /// </summary>
+    /// <param name="user">The user the whose two factor authentication services will be returned.</param>
+    /// <returns>
+    /// The <see cref="Task"/> that represents result of the asynchronous operation, a list of two
+    /// factor authentication services for the specified user.
+    /// </returns>
+    public static async Task<List<IUser2FAService<TUser>>> GetValidTwoFactorServicesAsync<TUser>(this UserManager<TUser> userManager, TUser user) where TUser : class
+    {
+        ThrowIfDisposed(userManager);
+        ArgumentNullException.ThrowIfNull(user);
+
+        List<IUser2FAService<TUser>> services = [];
+        foreach (var service in GetAllUser2FAServices(userManager))
+        {
+            if (await service.IsSuitableAsync(userManager, user))
+            {
+                services.Add(service);
+            }
+        }
+        return services;
+    }
 
     /// <summary>
     /// Sets the two factor authentication provider for the specified <paramref name="user"/>.
@@ -116,5 +143,18 @@ public static class UserManagerExtensions
             throw new MissingMemberException("UserManager does not contain _tokenProviders field.");
         }
         return _tokenProviders;
+    }
+
+    //private readonly IEnumerable<IUser2FAService<TUser>> _user2FAServices;
+    private static IEnumerable<IUser2FAService<TUser>> GetAllUser2FAServices<TUser>(UserManager<TUser> userManager) where TUser : class
+    {
+        if (userManager
+            .GetType()
+            .GetField("_services", BindingFlags.NonPublic | BindingFlags.Instance)?
+            .GetValue(userManager) is not IServiceProvider _services)
+        {
+            throw new MissingMemberException("UserManager does not contain _services field.");
+        }
+        return _services.GetServices<IUser2FAService<TUser>>();
     }
 }

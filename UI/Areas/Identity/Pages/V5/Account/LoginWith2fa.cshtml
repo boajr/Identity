@@ -62,9 +62,12 @@ else
                 <div>
                     <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
                 </div>
-                <p>
-                    <a asp-page="./LoginWithRecoveryCode" onclick="event.preventDefault();">Resend authentication token</a>
-                </p>
+                @if (Model.CanResendToken)
+                {
+                    <p>
+                        <a asp-page="./LoginWithRecoveryCode" onclick="event.preventDefault();">Resend authentication token</a>
+                    </p>
+                }
             </form>
         </div>
     </div>

@@ -82,7 +82,7 @@ public static class SignInManagerExtensions
         if (signInManager
             .GetType()
             .GetMethod("LockedOut", BindingFlags.NonPublic | BindingFlags.Instance)?
-            .Invoke(signInManager, new object[] { user }) is not Task<SignInResult> lochedOut)
+            .Invoke(signInManager, [user]) is not Task<SignInResult> lochedOut)
         {
             return Task.FromResult<SignInResult>(SignInResult.Failed);
         }
@@ -94,7 +94,7 @@ public static class SignInManagerExtensions
         if (signInManager
             .GetType()
             .GetMethod("PreSignInCheck", BindingFlags.NonPublic | BindingFlags.Instance)?
-            .Invoke(signInManager, new object[] { user }) is not Task<SignInResult?> preSignInCheck)
+            .Invoke(signInManager, [user]) is not Task<SignInResult?> preSignInCheck)
         {
             return Task.FromResult<SignInResult?>(SignInResult.Failed);
         }
@@ -106,7 +106,7 @@ public static class SignInManagerExtensions
         if (signInManager
             .GetType()
             .GetMethod("DoTwoFactorSignInAsync", BindingFlags.NonPublic | BindingFlags.Instance)?
-            .Invoke(signInManager, new object[] { user, twoFactorInfo, isPersistent, rememberClient }) is not Task<SignInResult> doTwoFactorSignInAsync)
+            .Invoke(signInManager, [user, twoFactorInfo, isPersistent, rememberClient]) is not Task<SignInResult> doTwoFactorSignInAsync)
         {
             return Task.FromResult<SignInResult>(SignInResult.Failed);
         }

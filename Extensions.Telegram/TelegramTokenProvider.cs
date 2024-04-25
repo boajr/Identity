@@ -22,7 +22,7 @@ public class TelegramTokenProvider<TUser> : TotpSecurityStampBasedTokenProvider<
     }
 
     /// <summary>
-    /// Returns the a value for the user used as entropy in the generated token.
+    /// Returns the value for the user used as entropy in the generated token.
     /// </summary>
     /// <param name="purpose">The purpose of the two-factor authentication token.</param>
     /// <param name="manager">The <see cref="UserManager{TUser}"/> to retrieve the <paramref name="user"/> from.</param>
