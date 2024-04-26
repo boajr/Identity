@@ -82,7 +82,7 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
     /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the <paramref name="token"/>
     /// is sent, otherwise returns <c>false</c>.
     /// </returns>
-    /// <remarks>By default this calls into <see cref="ProcessSendToken"/>.</remarks>.
+    /// <remarks>By default this calls into <see cref="ProcessSendToken"/>.</remarks>
     protected virtual Task<bool> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
     {
         return Task.FromResult(ProcessSendToken(token, manager, user));

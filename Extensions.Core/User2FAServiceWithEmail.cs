@@ -26,11 +26,10 @@ public class User2FAServiceWithEmail<TUser> : User2FAServiceWithTokenProvider<TU
     /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the <paramref name="token"/>
     /// is sent, otherwise returns <c>false</c>.
     /// </returns>
-    /// <remarks>By default this calls into <see cref="ProcessSendToken"/>.</remarks>.
     protected override async Task<bool> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
     {
-        var email = await manager.GetEmailAsync(user);
-        if (email == null || !await manager.IsEmailConfirmedAsync(user))
+        var email = await manager.GetEmailAsync(user).ConfigureAwait(false);
+        if (email == null || !await manager.IsEmailConfirmedAsync(user).ConfigureAwait(false))
         {
             return false;
         }

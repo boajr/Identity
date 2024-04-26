@@ -25,11 +25,10 @@ public class User2FAServiceWithSms<TUser> : User2FAServiceWithTokenProvider<TUse
     /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the <paramref name="token"/>
     /// is sent, otherwise returns <c>false</c>.
     /// </returns>
-    /// <remarks>By default this calls into <see cref="ProcessSendToken"/>.</remarks>.
     protected override async Task<bool> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
     {
-        var phone = await manager.GetPhoneNumberAsync(user);
-        if (phone == null || !await manager.IsPhoneNumberConfirmedAsync(user))
+        var phone = await manager.GetPhoneNumberAsync(user).ConfigureAwait(false);
+        if (phone == null || !await manager.IsPhoneNumberConfirmedAsync(user).ConfigureAwait(false))
         {
             return false;
         }
