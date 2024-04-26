@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <summary>
 /// Default UI extensions to <see cref="IdentityBuilder"/>.
 /// </summary>
-public static class IdentityBuilderUIExtensions_BOA
+public static class BoaIdentityBuilderUIExtensions
 {
     /// <summary>
     /// Adds a default, self-contained UI for Identity to the application using
@@ -45,7 +45,7 @@ public static class IdentityBuilderUIExtensions_BOA
                     framework = default;
                 }
 
-                var parts = new ConsolidatedAssemblyApplicationPartFactory().GetApplicationParts(typeof(IdentityBuilderUIExtensions_BOA).Assembly);
+                var parts = new ConsolidatedAssemblyApplicationPartFactory().GetApplicationParts(typeof(BoaIdentityBuilderUIExtensions).Assembly);
                 foreach (var part in parts)
                 {
                     apm.ApplicationParts.Add(part);
@@ -128,6 +128,7 @@ public static class IdentityBuilderUIExtensions_BOA
                                 descriptor.RelativePath = descriptor.RelativePath.Replace("V4/", "");
                             }
                             break;
+
                         case UIFramework.Bootstrap5:
                             if (descriptor.Type?.FullName?.Contains("V4", StringComparison.Ordinal) is true)
                             {
@@ -140,6 +141,7 @@ public static class IdentityBuilderUIExtensions_BOA
                                 descriptor.RelativePath = descriptor.RelativePath.Replace("V5/", "");
                             }
                             break;
+
                         default:
                             throw new InvalidOperationException($"Unknown framework: {_framework}");
                     }
@@ -153,7 +155,7 @@ public static class IdentityBuilderUIExtensions_BOA
         }
 
         private static bool IsIdentityUIView(CompiledViewDescriptor desc) => desc.RelativePath.StartsWith("/Areas/Identity", StringComparison.OrdinalIgnoreCase) &&
-            desc.Type?.Assembly == typeof(IdentityBuilderUIExtensions_BOA).Assembly;
+            desc.Type?.Assembly == typeof(BoaIdentityBuilderUIExtensions).Assembly;
     }
 
     /// <summary>
