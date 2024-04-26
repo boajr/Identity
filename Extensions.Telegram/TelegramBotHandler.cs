@@ -1,6 +1,7 @@
 ﻿using Boa.TelegramBotService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
+using System.Globalization;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
@@ -44,6 +45,16 @@ namespace Boa.Identity.Telegram
             if (update.Type != UpdateType.Message || update.Message?.From == null)
                 return false;
 
+            // cambia la lingua di risposta del bot
+            if (update.Message.From.LanguageCode != CultureInfo.CurrentUICulture.TwoLetterISOLanguageName)
+            {
+                var lang = CultureInfo.GetCultureInfo(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+                if (lang != null)
+                {
+                    CultureInfo.CurrentUICulture = lang;
+                }
+            }
+
             // verifico se ho azioni pending per l'utente
             long chatId = update.Message.Chat.Id;
             var tokens = await _userManager.GetAllTelegramTokensAsync(chatId, "[boaidentity]");
@@ -73,7 +84,7 @@ namespace Boa.Identity.Telegram
                     switch (name)
                     {
                         case "RegisterUserMessage":
-                            retVal = await RegisterUser(botClient, update.Message, cancellationToken).ConfigureAwait(false);
+                            retVal = await RegisterUser(botClient, update.Message, null, cancellationToken).ConfigureAwait(false);
                             break;
 
                         case "ResetPasswordMessage":
@@ -91,14 +102,26 @@ namespace Boa.Identity.Telegram
                             // potrebbe essere l'annulla, in questo caso cancello il messaggio
                             if (update.Message.Text == Localizer["Cancel"])
                             {
-                                retVal = await RegisterUser(botClient, update.Message, cancellationToken).ConfigureAwait(false);
+                                retVal = await RegisterUser(botClient, update.Message, null, cancellationToken).ConfigureAwait(false);
                             }
                             break;
 
-                        //case "ResetPasswordMessage":
-                        //    retVal = await ResetPassword(botClient, update.Message, cancellationToken).ConfigureAwait(false);
-                        //    break;
+                            //case "ResetPasswordMessage":
+                            //    retVal = await ResetPassword(botClient, update.Message, cancellationToken).ConfigureAwait(false);
+                            //    break;
                     }
+                }
+            }
+
+            // arrivo qui se il messaggio non è una risposta ad un'azione, quindi verifico che non
+            // sia l'inizio di una richiesta di registrazione (è il comando /register)
+            if (!retVal && update.Message.Type == MessageType.Text && update.Message.Text != null)
+            {
+                var command = update.Message.Text.Split(' ').First();
+
+                if (command == Localizer["/register"])
+                {
+                    retVal = await RegisterUser(botClient, update.Message, Localizer["Please post your contact card to be identified"], cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -114,11 +137,10 @@ namespace Boa.Identity.Telegram
             catch (ApiRequestException) { }
         }
 
-        private async Task<bool> RegisterUser(ITelegramBotClient botClient, Message response, CancellationToken cancellationToken)
+        private async Task<bool> RegisterUser(ITelegramBotClient botClient, Message response, string? text, CancellationToken cancellationToken)
         {
             await DeleteMessageNoExceptionAsync(botClient, response.Chat.Id, response.MessageId, cancellationToken).ConfigureAwait(false);
 
-            string? text = null;
             bool retry = true;
 
             if (response.Type == MessageType.Contact && response.Contact != null)
@@ -150,8 +172,12 @@ namespace Boa.Identity.Telegram
             }
             else
             {
-                // se arrivo qui, è un messaggio di testo e lo considero la traduzione di "Cancel"
-                retry = false;
+                // se arrivo qui, o è il comando \register o un generico messaggio di testo. Se non
+                // è il comando \register, considero la risposta la pressione del tasto "Cancel"
+                if (text == null)
+                {
+                    retry = false;
+                }
             }
 
             // invio un messaggio all'utente o per chiedergli nuovamente la scheda di contatto o per nascondergli la tastiera
@@ -159,9 +185,9 @@ namespace Boa.Identity.Telegram
                 chatId: response.Chat.Id,
                 text: text ?? "Remove keyboard",
                 replyMarkup: retry ?
-                    new ReplyKeyboardMarkup(new[] {
-                            new KeyboardButton[] { KeyboardButton.WithRequestContact(Localizer["Send\r\nCONTACT CARD"]) },
-                            new KeyboardButton[] { new KeyboardButton(Localizer["Cancel"]) }
+                    new ReplyKeyboardMarkup(new KeyboardButton[][] {
+                            [ KeyboardButton.WithRequestContact(Localizer["Send\r\nCONTACT CARD"]) ],
+                            [ new KeyboardButton(Localizer["Cancel"]) ]
                     }) : new ReplyKeyboardRemove(),
                 cancellationToken: cancellationToken
             ).ConfigureAwait(false);
@@ -171,7 +197,7 @@ namespace Boa.Identity.Telegram
                 // Se invio nuovamente la richiesta all'utente, la registro per poter processare la
                 // risposta che mi darà
                 await _userManager.SetTelegramTokenAsync(response.Chat.Id, "[boaidentity]", "RegisterUserMessage", msg.MessageId.ToString()).ConfigureAwait(false);
-            } 
+            }
             else if (text == null)
             {
                 // Se invece non ho un testo da visualizzare all'utente, vuol dire che il messaggio

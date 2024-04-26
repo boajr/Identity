@@ -12,8 +12,7 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 var botToken = builder.Configuration.GetValue<string>("Telegram:BotToken")
                ?? throw new Exception("'Telegram:BotToken' string not found.");
-builder.Services.AddTelegramBot(options =>
-    options.BotToken = botToken);
+builder.Services.AddTelegramBot(options => options.BotToken = botToken);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -26,7 +25,7 @@ builder.Services.AddBoaIdentity<IdentityTelegramUser>(options => options.SignIn.
     .AddBoaResetPasswordServiceDefaultUIEmail()
     .AddBoaResetPasswordServiceTelegram()
     .AddBoaUser2FAServiceWithAuthenticator()
-    .AddBoaUser2FAServiceWithEmail();
+    .AddBoaUser2FAServiceWithTelegram();
 builder.Services.AddRazorPages();
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();  // forse va bene anche scoped o singleton???
