@@ -39,7 +39,7 @@ namespace Boa.Identity
 
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
-            return _localizer != null ? _localizer.GetAllStrings(includeParentCultures) : Enumerable.Empty<LocalizedString>();
+            return _localizer != null ? _localizer.GetAllStrings(includeParentCultures) : [];
         }
 
         public IdentityStringLocalizer(IServiceProvider serviceProvider, string baseName)

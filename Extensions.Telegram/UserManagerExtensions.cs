@@ -129,9 +129,9 @@ namespace Boa.Identity.Telegram
                 var msg = await botClient.SendTextMessageAsync(
                     chatId: telegramId,
                     text: localizer["Unknown user!\r\nPlease post your contact card to be identified"],
-                    replyMarkup: new ReplyKeyboardMarkup(new[] {
-                        new KeyboardButton[] { KeyboardButton.WithRequestContact(localizer["Send\r\nCONTACT CARD"]) },
-                        new KeyboardButton[] { new KeyboardButton(localizer["Cancel"]) }
+                    replyMarkup: new ReplyKeyboardMarkup(new KeyboardButton[][] {
+                        [ KeyboardButton.WithRequestContact(localizer["Send\r\nCONTACT CARD"]) ],
+                        [ new KeyboardButton(localizer["Cancel"]) ]
                     })
                 ).ConfigureAwait(false);
 
