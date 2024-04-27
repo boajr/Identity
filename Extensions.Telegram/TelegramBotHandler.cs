@@ -46,9 +46,9 @@ namespace Boa.Identity.Telegram
                 return false;
 
             // cambia la lingua di risposta del bot
-            if (update.Message.From.LanguageCode != CultureInfo.CurrentUICulture.TwoLetterISOLanguageName)
+            if (update.Message.From.LanguageCode != null && update.Message.From.LanguageCode != CultureInfo.CurrentUICulture.TwoLetterISOLanguageName)
             {
-                var lang = CultureInfo.GetCultureInfo(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+                var lang = CultureInfo.GetCultureInfo(update.Message.From.LanguageCode);
                 if (lang != null)
                 {
                     CultureInfo.CurrentUICulture = lang;
