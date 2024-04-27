@@ -77,12 +77,12 @@ public abstract class LoginWith2faModel : PageModel
 
 internal sealed class LoginWith2faModel<TUser> : LoginWith2faModel where TUser : class
 {
-    private readonly SignInManager<TUser> _signInManager;
+    private readonly Microsoft.AspNetCore.Identity.SignInManager<TUser> _signInManager;
     private readonly UserManager<TUser> _userManager;
     private readonly ILogger<LoginWith2faModel> _logger;
 
     public LoginWith2faModel(
-        SignInManager<TUser> signInManager,
+        Microsoft.AspNetCore.Identity.SignInManager<TUser> signInManager,
         UserManager<TUser> userManager,
         ILogger<LoginWith2faModel> logger)
     {
