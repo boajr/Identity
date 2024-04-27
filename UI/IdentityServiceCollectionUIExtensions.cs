@@ -47,10 +47,9 @@ public static class IdentityServiceCollectionUIExtensions
             o.Stores.MaxLengthForKeys = 128;
             configureOptions?.Invoke(o);
         })
-            .AddBoaUI()
             .AddDefaultUI()
+            .AddBoaUI()
             .AddDefaultTokenProviders()
-            .AddSignInManager<Boa.Identity.SignInManager<TUser>>()
             .AddErrorDescriber<Boa.Identity.IdentityErrorDescriber>();
     }
 }

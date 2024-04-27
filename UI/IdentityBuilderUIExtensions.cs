@@ -28,7 +28,16 @@ public static class BoaIdentityBuilderUIExtensions
     /// <returns>The <see cref="IdentityBuilder"/>.</returns>
     public static IdentityBuilder AddBoaUI(this IdentityBuilder builder)
     {
-        builder.AddSignInManager();
+        // chiama la builder.AddSignInManager<Boa.Identity.SignInManager<TUser>>
+        (typeof(Microsoft.AspNetCore.Identity.IdentityBuilderExtensions)
+            .GetMethods()
+            .Where(x => x.Name == "AddSignInManager")
+            .Where(x => x.IsGenericMethod)
+            .FirstOrDefault()
+            ?? throw new MissingMethodException(typeof(Microsoft.AspNetCore.Identity.IdentityBuilderExtensions).Name + " do not implement method AddSignInManager"))
+            .MakeGenericMethod(typeof(Boa.Identity.SignInManager<>).MakeGenericType(builder.UserType))
+            .Invoke(null, [builder]);
+
         builder.Services
             .AddMvc()
             .ConfigureApplicationPartManager(apm =>
