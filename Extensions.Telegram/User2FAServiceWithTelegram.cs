@@ -9,7 +9,7 @@ public class User2FAServiceWithTelegram<TUser> : User2FAServiceWithTokenProvider
     private readonly TelegramBotService.TelegramBotService _botClient;
 
     public User2FAServiceWithTelegram(IServiceProvider serviceProvider, TelegramBotService.TelegramBotService botClient)
-            : base(serviceProvider, TokenOptions.DefaultEmailProvider)
+        : base(serviceProvider, "Telegram")
     {
         _botClient = botClient ?? throw new ArgumentNullException(nameof(botClient));
     }
