@@ -49,6 +49,7 @@ public static class IdentityBuilderExtensions
             throw new InvalidOperationException("AddBoaUser2FAServiceWithTelegram can only be called with a user that derives from IdentityTelegramUser<TKey>.");
         }
 
+        builder.AddTokenProvider("Telegram", typeof(TelegramTokenProvider<>).MakeGenericType(builder.UserType));
         builder.AddBoaUser2FAService(typeof(User2FAServiceWithTelegram<>).MakeGenericType(builder.UserType));
         builder.Services.TryAddScoped(typeof(ITelegramBotHandler), typeof(TelegramBotHandler<>).MakeGenericType(builder.UserType));
         return builder;
