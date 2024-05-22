@@ -10,6 +10,11 @@ public interface IUser2FAService<TUser> where TUser : class
     string ServiceName { get; }
 
     /// <summary>
+    /// Message to show to users when they chose the service to authenticate.
+    /// </summary>
+    string RequestMessage { get; }
+
+    /// <summary>
     /// Returns a flag indicating whether the service is suitable for two-factor authentication
     /// for the specified <paramref name="user"/>.
     /// </summary>

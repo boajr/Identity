@@ -14,6 +14,8 @@ public class User2FAServiceWithEmail<TUser> : User2FAServiceWithTokenProvider<TU
         _emailSender = emailSender;
     }
 
+    public override string RequestMessage => @"An authenticator code was sent to your email. Enter that code below";
+
     public override bool NeedToSendToken => true;
 
     /// <summary>

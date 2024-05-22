@@ -13,6 +13,8 @@ public class User2FAServiceWithSms<TUser> : User2FAServiceWithTokenProvider<TUse
         _smsSender = smsSender;
     }
 
+    public override string RequestMessage => @"An SMS with an authenticator code was sent to your phone. Enter that code below";
+
     public override bool NeedToSendToken => true;
 
     /// <summary>

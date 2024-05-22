@@ -63,6 +63,12 @@ public abstract class LoginWith2faModel : PageModel
     public List<SelectListItem>? ServicesList { get; set; }
 
     /// <summary>
+    ///     This API supports the Boa Identity default UI infrastructure and is not intended to be used
+    ///     directly from your code. This API may change or be removed in future releases.
+    /// </summary>
+    public string Message { get; protected set; } = default!;
+
+    /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
@@ -177,6 +183,8 @@ internal sealed class LoginWith2faModel<TUser> : LoginWith2faModel where TUser :
             ServicesList = services.Select(s => new SelectListItem(s.ServiceName, s.ServiceName)).ToList();
             return Page();
         }
+
+        Message = service.RequestMessage;
 
         if (service is IUser2FAServiceWithToken<TUser> serviceWithToken)
         {

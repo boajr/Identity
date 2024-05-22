@@ -10,6 +10,8 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
 
     public string ServiceName { get; }
 
+    abstract public string RequestMessage { get; }
+
     abstract public bool NeedToSendToken { get; }
 
 

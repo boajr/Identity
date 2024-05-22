@@ -14,6 +14,8 @@ public class User2FAServiceWithTelegram<TUser> : User2FAServiceWithTokenProvider
         _botClient = botClient ?? throw new ArgumentNullException(nameof(botClient));
     }
 
+    public override string RequestMessage => @"An authenticator code was sent to your telegram account. Enter that code below";
+
     public override bool NeedToSendToken => true;
 
     /// <summary>

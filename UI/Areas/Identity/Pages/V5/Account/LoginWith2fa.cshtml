@@ -8,7 +8,7 @@
 <hr />
 @if (Model.ChooseService)
 {
-    <p>Your login is protected with an authenticator app. Select your authenticator provider below.</p>
+    <p>Your login is protected with a two factor authentication. Select your authenticator provider below.</p>
     <div class="row">
         <div class="col-md-4">
             <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
@@ -39,7 +39,7 @@
 }
 else
 {
-    <p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
+    <p>@Model.Message.</p>
     <div class="row">
         <div class="col-md-4">
             <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
