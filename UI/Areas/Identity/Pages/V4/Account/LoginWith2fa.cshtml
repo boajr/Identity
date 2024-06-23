@@ -16,10 +16,16 @@
                 <input type="hidden" name="ChooseService" value="True" />
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
                 <div class="form-group">
+                    <label asp-for="Input.TwoFactorService">Example select</label>
+                    <select asp-for="Input.TwoFactorService" class="form-control" asp-items=@Model.ServicesList>
+                    </select>
+                    <span asp-validation-for="Input.TwoFactorService" class="text-danger"></span>
+                </div>
+                <div class="form-group">
                     <div class="checkbox">
-                        <label asp-for="Input.RememberService">
-                            <input asp-for="Input.RememberService" />
-                            @Html.DisplayNameFor(m => m.Input.RememberService)
+                        <label asp-for="RememberService">
+                            <input asp-for="RememberService" />
+                            @Html.DisplayNameFor(m => m.RememberService)
                         </label>
                     </div>
                 </div>
@@ -60,6 +66,14 @@ else
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Log in</button>
                 </div>
+                @if (Model.CanResendToken)
+                {
+                <div class="form-group">
+                    <p>
+                        <a asp-page="./LoginWithRecoveryCode" onclick="event.preventDefault();">Resend authentication token</a>
+                    </p>
+                </div>
+                }
             </form>
         </div>
     </div>

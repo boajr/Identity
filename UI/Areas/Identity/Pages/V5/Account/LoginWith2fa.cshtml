@@ -64,9 +64,11 @@ else
                 </div>
                 @if (Model.CanResendToken)
                 {
+                <div>
                     <p>
                         <a asp-page="./LoginWithRecoveryCode" onclick="event.preventDefault();">Resend authentication token</a>
                     </p>
+                </div>
                 }
             </form>
         </div>
