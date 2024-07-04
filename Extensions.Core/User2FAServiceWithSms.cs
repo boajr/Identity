@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace Boa.Identity;
 
@@ -7,13 +8,13 @@ public class User2FAServiceWithSms<TUser> : User2FAServiceWithTokenProvider<TUse
 {
     private readonly ISmsSender _smsSender;
 
-    public User2FAServiceWithSms(IServiceProvider serviceProvider, ISmsSender smsSender)
-        : base(serviceProvider, TokenOptions.DefaultPhoneProvider)
+    public User2FAServiceWithSms(IServiceProvider serviceProvider, IConfiguration configuration, ISmsSender smsSender)
+        : base(serviceProvider, configuration, TokenOptions.DefaultPhoneProvider)
     {
         _smsSender = smsSender;
     }
 
-    public override string RequestMessage => @"An SMS with an authenticator code was sent to your phone. Enter that code below";
+    public override string RequestMessage => @"An SMS with an authentication code was sent to your phone. Enter that code below";
 
     public override bool NeedToSendToken => true;
 

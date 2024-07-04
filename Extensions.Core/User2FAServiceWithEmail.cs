@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace Boa.Identity;
 
@@ -8,13 +9,13 @@ public class User2FAServiceWithEmail<TUser> : User2FAServiceWithTokenProvider<TU
 {
     private readonly IEmailSender _emailSender;
 
-    public User2FAServiceWithEmail(IServiceProvider serviceProvider, IEmailSender emailSender)
-        : base(serviceProvider, TokenOptions.DefaultEmailProvider)
+    public User2FAServiceWithEmail(IServiceProvider serviceProvider, IConfiguration configuration, IEmailSender emailSender)
+        : base(serviceProvider, configuration, TokenOptions.DefaultEmailProvider)
     {
         _emailSender = emailSender;
     }
 
-    public override string RequestMessage => @"An authenticator code was sent to your email. Enter that code below";
+    public override string RequestMessage => @"An authentication code was sent to your email. Enter that code below";
 
     public override bool NeedToSendToken => true;
 

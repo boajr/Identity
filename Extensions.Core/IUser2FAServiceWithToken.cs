@@ -20,7 +20,7 @@ public interface IUser2FAServiceWithToken<TUser> : IUser2FAService<TUser>
     /// of the operation.
     /// The task will return true if the token is sended to the <paramref name="user"/>, otherwise false.
     /// </returns>
-    Task<bool> SendTokenAsync(UserManager<TUser> manager, TUser user);
+    Task<Send2FATokenResult> SendTokenAsync(UserManager<TUser> manager, TUser user);
 
     /// <summary>
     /// Returns a flag indicating whether the specified <paramref name="token"/> is valid for the given

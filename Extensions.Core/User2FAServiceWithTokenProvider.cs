@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 
 namespace Boa.Identity;
@@ -9,6 +10,11 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
     private readonly IServiceProvider _serviceProvider;
 
     public string ServiceName { get; }
+
+    /// <summary>
+    /// The number of second to wait before send another token.
+    /// </summary>
+    int TimeToWait { get; } = 60;
 
     abstract public string RequestMessage { get; }
 
@@ -30,10 +36,14 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
 
 
 
-    public User2FAServiceWithTokenProvider(IServiceProvider serviceProvider, string providerName)
+    public User2FAServiceWithTokenProvider(IServiceProvider serviceProvider, IConfiguration configuration, string providerName)
     {
-        ServiceName = providerName;
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        ServiceName = providerName;
+        if (int.TryParse(configuration[$"Boa.Identity:User2FAServiceWithTokenProvider.TimeToWait:{ServiceName}"], out int val))
+        {
+            TimeToWait = val;
+        }
     }
 
     public async Task<bool> IsSuitableAsync(UserManager<TUser> manager, TUser user)
@@ -47,17 +57,37 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
         return await provider.CanGenerateTwoFactorTokenAsync(manager, user).ConfigureAwait(false);
     }
 
-    public async Task<bool> SendTokenAsync(UserManager<TUser> manager, TUser user)
+    public async Task<Send2FATokenResult> SendTokenAsync(UserManager<TUser> manager, TUser user)
     {
-        var provider = manager.GetTokenProvider(ServiceName);
-        if (provider == null)
+        var provider = manager.GetTokenProvider(ServiceName)
+            ?? throw new NotImplementedException("The IUserTwoFactorTokenProvider<TUser> associated with this service isn't registered.");
+
+        if (!NeedToSendToken)
         {
-            return false;
+            return Send2FATokenResult.NotNeeded;
+        }
+
+        // verifica se sono trascorsi i secondi di attesa dall'invio precedente
+        var dt = await manager.GetLast2FATokenTimeAsync(user);
+        if (dt.HasValue)
+        {
+            var next = dt.Value.AddSeconds(TimeToWait);
+            var now = DateTime.UtcNow;
+            if (next > now)
+            {
+                return Send2FATokenResult.Wait((int)(next - now).TotalSeconds);
+            }
         }
 
         var token = await provider.GenerateAsync("TwoFactor", manager, user).ConfigureAwait(false);
+        bool sent = await ProcessSendTokenAsync(token, manager, user).ConfigureAwait(false);
+        if (!sent)
+        {
+            return Send2FATokenResult.Failed;
+        }
 
-        return await ProcessSendTokenAsync(token, manager, user).ConfigureAwait(false);
+        await manager.SetLast2FATokenTimeAsync(user);
+        return Send2FATokenResult.Success;
     }
 
     /// <summary>

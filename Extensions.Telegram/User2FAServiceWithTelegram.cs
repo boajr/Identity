@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Telegram.Bot;
 
 namespace Boa.Identity.Telegram;
@@ -8,13 +9,13 @@ public class User2FAServiceWithTelegram<TUser> : User2FAServiceWithTokenProvider
 {
     private readonly TelegramBotService.TelegramBotService _botClient;
 
-    public User2FAServiceWithTelegram(IServiceProvider serviceProvider, TelegramBotService.TelegramBotService botClient)
-        : base(serviceProvider, "Telegram")
+    public User2FAServiceWithTelegram(IServiceProvider serviceProvider, IConfiguration configuration, TelegramBotService.TelegramBotService botClient)
+        : base(serviceProvider, configuration, "Telegram")
     {
         _botClient = botClient ?? throw new ArgumentNullException(nameof(botClient));
     }
 
-    public override string RequestMessage => @"An authenticator code was sent to your telegram account. Enter that code below";
+    public override string RequestMessage => @"An authentication code was sent to your telegram account. Enter that code below";
 
     public override bool NeedToSendToken => true;
 

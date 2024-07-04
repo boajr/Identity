@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
 using System.Reflection;
 
 namespace Boa.Identity;
@@ -8,6 +9,7 @@ public static class UserManagerExtensions
 {
     private const string InternalLoginProvider = "[BoaUserStore]";
     private const string TwoFactorProviderTokenName = "TwoFactorProvider";
+    private const string Last2FATokenDateName = "Last2FATokenDate";
 
 
     /// <summary>
@@ -86,7 +88,7 @@ public static class UserManagerExtensions
     /// Get the token provider associated to <paramref name="providerName"/>.
     /// </summary>
     /// <param name="providerName">The name of the provider to retrieve.</param>
-    /// <returns>The <see cref="IUserTwoFactorTokenProvider<>"/> to <paramref name="providerName"/>.</returns>
+    /// <returns>The <see cref="IUserTwoFactorTokenProvider<>"/> associated to <paramref name="providerName"/>.</returns>
     public static IUserTwoFactorTokenProvider<TUser>? GetTokenProvider<TUser>(this UserManager<TUser> userManager, string providerName) where TUser : class
     {
         ThrowIfDisposed(userManager);
@@ -98,7 +100,40 @@ public static class UserManagerExtensions
         return providers[providerName];
     }
 
+    /// <summary>
+    /// Set last two factor authentication token time for the specified <paramref name="user"/>.
+    /// </summary>
+    /// <param name="user">The user whose token time should be set.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+    public static async Task<IdentityResult> SetLast2FATokenTimeAsync<TUser>(this UserManager<TUser> userManager, TUser user) where TUser : class
+    {
+        ThrowIfDisposed(userManager);
+        ArgumentNullException.ThrowIfNull(user);
 
+        var store = GetAuthenticationTokenStore(userManager);
+        await store.SetTokenAsync(user, InternalLoginProvider, Last2FATokenDateName, DateTime.UtcNow.ToString("o"), GetCancellationToken(userManager)).ConfigureAwait(false);
+        //await userManager.UpdateSecurityStampInternal(user).ConfigureAwait(false);
+        return await userManager.UpdateAsync(user).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Get last two factor authentication token time for the specified <paramref name="user"/>.
+    /// </summary>
+    /// <param name="user">The user whose authenticator provider should be retrived.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the last two factor authentication token time for the specified <paramref name="user"/>.</returns>
+    public static async Task<DateTime?> GetLast2FATokenTimeAsync<TUser>(this UserManager<TUser> userManager, TUser user) where TUser : class
+    {
+        ThrowIfDisposed(userManager);
+        ArgumentNullException.ThrowIfNull(user);
+
+        var store = GetAuthenticationTokenStore(userManager);
+        var str = await store.GetTokenAsync(user, InternalLoginProvider, Last2FATokenDateName, GetCancellationToken(userManager));
+        if (!DateTime.TryParseExact(str, "o", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+        {
+            return null;
+        }
+        return dt;
+    }
 
     private static void ThrowIfDisposed<TUser>(UserManager<TUser> userManager) where TUser : class
     {
