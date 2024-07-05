@@ -128,7 +128,7 @@ public static class UserManagerExtensions
 
         var store = GetAuthenticationTokenStore(userManager);
         var str = await store.GetTokenAsync(user, InternalLoginProvider, Last2FATokenDateName, GetCancellationToken(userManager));
-        if (!DateTime.TryParseExact(str, "o", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+        if (!DateTime.TryParseExact(str, "o", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime dt))
         {
             return null;
         }

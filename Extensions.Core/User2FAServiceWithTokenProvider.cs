@@ -63,7 +63,7 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
             return 0;
         }
 
-        var next = dt.Value.AddSeconds(ResendSeconds).ToUniversalTime();
+        var next = dt.Value.AddSeconds(ResendSeconds);
         var now = DateTime.UtcNow;
         if (next <= now)
         {
