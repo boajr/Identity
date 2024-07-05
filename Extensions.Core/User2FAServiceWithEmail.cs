@@ -39,7 +39,7 @@ public class User2FAServiceWithEmail<TUser> : User2FAServiceWithTokenProvider<TU
 
         await _emailSender.SendEmailAsync(
             email,
-            Localizer["Two Factor Authentication Token"],
+            Localizer["Two Factor Authentication Code"],
             Localizer["Please, to authenticate use this code {0}", token]).ConfigureAwait(false);
 
         return Send2FATokenResult.Success;
