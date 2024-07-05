@@ -7,6 +7,7 @@ public class Send2FATokenResult
 {
     private static readonly Send2FATokenResult _success = new() { Succeeded = true };
     private static readonly Send2FATokenResult _failed = new();
+    private static readonly Send2FATokenResult _retry = new() { CanRetry = true };
     private static readonly Send2FATokenResult _notNeeded = new() { IsNotNeeded = true };
 
     /// <summary>
@@ -14,6 +15,12 @@ public class Send2FATokenResult
     /// </summary>
     /// <value>True if the token was send successfully, otherwise false.</value>
     public bool Succeeded { get; protected set; }
+
+    /// <summary>
+    /// Returns a flag indication whether the failure is blocking or another try is possible.
+    /// </summary>
+    /// <value>True if another try is possible, otherwise false.</value>
+    public bool CanRetry { get; protected set; }
 
     /// <summary>
     /// Returns a flag indication whether the service needs a method to send tokens.
@@ -46,6 +53,14 @@ public class Send2FATokenResult
     public static Send2FATokenResult Failed => _failed;
 
     /// <summary>
+    /// Returns a <see cref="Send2FATokenResult"/> that represents a failed submission, but it's
+    /// possible to make another try.
+    /// </summary>
+    /// <returns>A <see cref="Send2FATokenResult"/> that represents a failed submission, but it's
+    /// possible to make another try.</returns>
+    public static Send2FATokenResult Retry => _retry;
+
+    /// <summary>
     /// Returns a <see cref="Send2FATokenResult"/> that represents a submission that failed because the
     /// service doesn't need a method to send tokens.
     /// </summary>
@@ -69,7 +84,8 @@ public class Send2FATokenResult
     public override string ToString()
     {
         return IsNotNeeded ? "NotNeeded" :
-               HasToWait ? $"HasToWait ({WaitingTime} sec)" :
+               CanRetry ? "Retry" :
+               HasToWait ? $"Wait {WaitingTime} sec" :
                Succeeded ? "Succeeded" : "Failed";
     }
 }

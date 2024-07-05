@@ -29,12 +29,12 @@ public class User2FAServiceWithEmail<TUser> : User2FAServiceWithTokenProvider<TU
     /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the <paramref name="token"/>
     /// is sent, otherwise returns <c>false</c>.
     /// </returns>
-    protected override async Task<bool> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
+    protected override async Task<Send2FATokenResult> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
     {
         var email = await manager.GetEmailAsync(user).ConfigureAwait(false);
         if (email == null || !await manager.IsEmailConfirmedAsync(user).ConfigureAwait(false))
         {
-            return false;
+            return Send2FATokenResult.Failed;
         }
 
         await _emailSender.SendEmailAsync(
@@ -42,6 +42,6 @@ public class User2FAServiceWithEmail<TUser> : User2FAServiceWithTokenProvider<TU
             Localizer["Two Factor Authentication Token"],
             Localizer["Please, to authenticate use this code {0}", token]).ConfigureAwait(false);
 
-        return true;
+        return Send2FATokenResult.Success;
     }
 }

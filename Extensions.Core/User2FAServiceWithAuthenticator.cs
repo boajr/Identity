@@ -13,8 +13,8 @@ public class User2FAServiceWithAuthenticator<TUser> : User2FAServiceWithTokenPro
 
     public override bool NeedToSendToken => false;
 
-    protected override bool ProcessSendToken(string token, UserManager<TUser> manager, TUser user)
+    protected override Send2FATokenResult ProcessSendToken(string token, UserManager<TUser> manager, TUser user)
     {
-        return true;
+        return Send2FATokenResult.NotNeeded;
     }
 }

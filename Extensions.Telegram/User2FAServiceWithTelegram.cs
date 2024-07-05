@@ -30,12 +30,12 @@ public class User2FAServiceWithTelegram<TUser> : User2FAServiceWithTokenProvider
     /// is sent, otherwise returns <c>false</c>.
     /// </returns>
     /// <remarks>By default this calls into <see cref="ProcessSendToken"/>.</remarks>
-    protected override async Task<bool> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
+    protected override async Task<Send2FATokenResult> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
     {
         long? telegramId = await manager.GetTelegramIdAsync(user).ConfigureAwait(false);
         if (telegramId == null)
         {
-            return false;
+            return Send2FATokenResult.Failed;
         }
 
         await _botClient.SendTextMessageAsync(
@@ -43,6 +43,6 @@ public class User2FAServiceWithTelegram<TUser> : User2FAServiceWithTokenProvider
             text: Localizer["Please, to authenticate use this code {0}", token]
         ).ConfigureAwait(false);
 
-        return true;
+        return Send2FATokenResult.Success;
     }
 }

@@ -11,10 +11,7 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
 
     public string ServiceName { get; }
 
-    /// <summary>
-    /// The number of second to wait before send another token.
-    /// </summary>
-    int TimeToWait { get; } = 60;
+    public int ResendSeconds { get; } = 60;
 
     abstract public string RequestMessage { get; }
 
@@ -42,7 +39,7 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
         ServiceName = providerName;
         if (int.TryParse(configuration[$"Boa.Identity:User2FAServiceWithTokenProvider.TimeToWait:{ServiceName}"], out int val))
         {
-            TimeToWait = val;
+            ResendSeconds = val;
         }
     }
 
@@ -57,6 +54,25 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
         return await provider.CanGenerateTwoFactorTokenAsync(manager, user).ConfigureAwait(false);
     }
 
+    public async Task<int> TimeToWaitAsync(UserManager<TUser> manager, TUser user)
+    {
+        // verifica se sono trascorsi i secondi di attesa dall'invio precedente
+        var dt = await manager.GetLast2FATokenTimeAsync(user);
+        if (!dt.HasValue)
+        {
+            return 0;
+        }
+
+        var next = dt.Value.AddSeconds(ResendSeconds);
+        var now = DateTime.UtcNow;
+        if (next <= now)
+        {
+            return 0;
+        }
+
+        return (int)(next - now).TotalSeconds;
+    }
+
     public async Task<Send2FATokenResult> SendTokenAsync(UserManager<TUser> manager, TUser user)
     {
         var provider = manager.GetTokenProvider(ServiceName)
@@ -67,27 +83,19 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
             return Send2FATokenResult.NotNeeded;
         }
 
-        // verifica se sono trascorsi i secondi di attesa dall'invio precedente
-        var dt = await manager.GetLast2FATokenTimeAsync(user);
-        if (dt.HasValue)
+        int timeToWait = await TimeToWaitAsync(manager, user);
+        if (timeToWait > 0)
         {
-            var next = dt.Value.AddSeconds(TimeToWait);
-            var now = DateTime.UtcNow;
-            if (next > now)
-            {
-                return Send2FATokenResult.Wait((int)(next - now).TotalSeconds);
-            }
+            return Send2FATokenResult.Wait(timeToWait);
         }
 
         var token = await provider.GenerateAsync("TwoFactor", manager, user).ConfigureAwait(false);
-        bool sent = await ProcessSendTokenAsync(token, manager, user).ConfigureAwait(false);
-        if (!sent)
+        var result = await ProcessSendTokenAsync(token, manager, user).ConfigureAwait(false);
+        if (result.Succeeded)
         {
-            return Send2FATokenResult.Failed;
+            await manager.SetLast2FATokenTimeAsync(user);
         }
-
-        await manager.SetLast2FATokenTimeAsync(user);
-        return Send2FATokenResult.Success;
+        return result;
     }
 
     /// <summary>
@@ -97,9 +105,9 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
     /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
     /// <param name="user">The user to send the token.</param>
     /// <returns>
-    /// Returns <c>true</c> if the <paramref name="token"/> is sent, otherwise returns <c>false</c>.
+    /// A <see cref="Send2FATokenResult"/> indicating the result of the operation.
     /// </returns>
-    protected virtual bool ProcessSendToken(string token, UserManager<TUser> manager, TUser user)
+    protected virtual Send2FATokenResult ProcessSendToken(string token, UserManager<TUser> manager, TUser user)
     {
         throw new NotImplementedException();
     }
@@ -111,11 +119,11 @@ public abstract class User2FAServiceWithTokenProvider<TUser> : IUser2FAServiceWi
     /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
     /// <param name="user">The user to send the token.</param>
     /// <returns>
-    /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the <paramref name="token"/>
-    /// is sent, otherwise returns <c>false</c>.
+    /// A <see cref="Task"/> that represents the asynchronous operation, containing a <see cref="Send2FATokenResult"/>
+    /// indicating the result of the operation.
     /// </returns>
     /// <remarks>By default this calls into <see cref="ProcessSendToken"/>.</remarks>
-    protected virtual Task<bool> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
+    protected virtual Task<Send2FATokenResult> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
     {
         return Task.FromResult(ProcessSendToken(token, manager, user));
     }
