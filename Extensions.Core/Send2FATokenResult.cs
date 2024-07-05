@@ -29,12 +29,6 @@ public class Send2FATokenResult
     public bool IsNotNeeded { get; protected set; }
 
     /// <summary>
-    /// Returns a flag indication whether the service has to wait before trying to send token again.
-    /// </summary>
-    /// <value>True if the service has to wait before trying to send token again, otherwise false.</value>
-    public bool HasToWait { get; protected set; }
-
-    /// <summary>
     /// Returns the number of seconds to wait before trying to send a token again.
     /// </summary>
     /// <value>The number of seconds to wait before trying to send a token again.</value>
@@ -75,7 +69,7 @@ public class Send2FATokenResult
     /// <param name="seconds">seconds to wait before the next request</param>
     /// <returns>A <see cref="Send2FATokenResult"/> that represents a submission that failed because the
     /// request was made too close to the previous one.</returns>
-    public static Send2FATokenResult Wait(int seconds) => new() { HasToWait = true, WaitingTime = seconds > 0 ? seconds : 1 };
+    public static Send2FATokenResult Wait(int seconds) => new() { CanRetry = true, WaitingTime = seconds > 0 ? seconds : 1 };
 
     /// <summary>
     /// Converts the value of the current <see cref="Send2FATokenResult"/> object to its equivalent string representation.
@@ -84,8 +78,8 @@ public class Send2FATokenResult
     public override string ToString()
     {
         return IsNotNeeded ? "NotNeeded" :
+               WaitingTime > 0 ? $"Wait {WaitingTime} sec" :
                CanRetry ? "Retry" :
-               HasToWait ? $"Wait {WaitingTime} sec" :
                Succeeded ? "Succeeded" : "Failed";
     }
 }
