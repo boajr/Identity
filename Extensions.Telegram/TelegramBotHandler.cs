@@ -132,7 +132,7 @@ namespace Boa.Identity.Telegram
         {
             try
             {
-                await botClient.DeleteMessageAsync(chatId, messageId, cancellationToken).ConfigureAwait(false);
+                await botClient.DeleteMessage(chatId, messageId, cancellationToken).ConfigureAwait(false);
             }
             catch (ApiRequestException) { }
         }
@@ -181,7 +181,7 @@ namespace Boa.Identity.Telegram
             }
 
             // invio un messaggio all'utente o per chiedergli nuovamente la scheda di contatto o per nascondergli la tastiera
-            var msg = await botClient.SendTextMessageAsync(
+            var msg = await botClient.SendMessage(
                 chatId: response.Chat.Id,
                 text: text ?? "Remove keyboard",
                 replyMarkup: retry ?
@@ -232,7 +232,7 @@ namespace Boa.Identity.Telegram
             var result = await _userManager.ResetPasswordAsync(user, token, response.Text ?? "").ConfigureAwait(false);
             if (result.Succeeded)
             {
-                await botClient.SendTextMessageAsync(
+                await botClient.SendMessage(
                     chatId: response.Chat.Id,
                     text: Localizer["Your password has been reset"],
                     cancellationToken: cancellationToken
@@ -242,7 +242,7 @@ namespace Boa.Identity.Telegram
 
             // se non sono riuscito a resettare la password comunico al client il primo errore e
             // chiedo se si vuole riprovare.
-            var msg = await botClient.SendTextMessageAsync(
+            var msg = await botClient.SendMessage(
                 chatId: response.Chat.Id,
                 text: result.Errors.First().Description + "\r\n\r\n" +
                     Localizer["Reply to this message with new password"],

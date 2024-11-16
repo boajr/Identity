@@ -51,15 +51,8 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         // fa in modo che il tag non venga scritto
         output.TagName = null;
@@ -78,7 +71,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
         // crea il select (o il campo nascosto) contenente l'elenco dei servizi disponibili
         if (serviceCount > 1)
         {
-            List<SelectListItem> items = new();
+            List<SelectListItem> items = [];
             foreach (var service in _resetPasswordServices)
             {
                 items.Add(new SelectListItem(service.ServiceName, service.ServiceName, service.ServiceName == method));
@@ -217,10 +210,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
             ViewContext = ViewContext
         };
 
-        TagHelperAttribute[] attributes = new TagHelperAttribute[2] {
-            new TagHelperAttribute("asp-validation-for", model),
-            new TagHelperAttribute("class", "text-danger")
-        };
+        TagHelperAttribute[] attributes = [new("asp-validation-for", model), new("class", "text-danger")];
 
         output.Content.AppendHtml(await RenderTagHelper(tagHelper, "span", TagMode.StartTagAndEndTag, attributes, context.Items, null).ConfigureAwait(false));
     }
@@ -242,9 +232,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
             // aggiunge l'input vero e proprio
             output.Content.AppendHtml($"{Environment.NewLine}            ");
-            await AppendInputTagHelper(model, new TagHelperAttribute[1] {
-                new TagHelperAttribute("asp-for", model)
-            }, context, output).ConfigureAwait(false);
+            await AppendInputTagHelper(model, [new("asp-for", model)], context, output).ConfigureAwait(false);
 
             // aggiunge il testo del label
             output.Content.AppendHtml($"{Environment.NewLine}            ");
@@ -265,10 +253,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
         // aggiunge il checkbox vero e proprio
         output.Content.AppendHtml($"{Environment.NewLine}        ");
-        await AppendInputTagHelper(model, new TagHelperAttribute[2] {
-            new TagHelperAttribute("class", "form-check-input"),
-            new TagHelperAttribute("asp-for", model)
-        }, context, output).ConfigureAwait(false);
+        await AppendInputTagHelper(model, [new("class", "form-check-input"), new("asp-for", model)], context, output).ConfigureAwait(false);
 
         // aggiunge il testo del label
         output.Content.AppendHtml($"{Environment.NewLine}        ");
@@ -281,24 +266,20 @@ public class ResetPasswordServicesTagHelper : TagHelper
     private async Task AppendInputElement(ModelExpression model, string group, bool visible, TagHelperContext context, TagHelperOutput output)
     {
         // crea la lista degli attributi da aggiungere all'input
-        TagHelperAttributeList inputAttrs = new()
-        {
-            new TagHelperAttribute("asp-for", model),
-            new TagHelperAttribute("class", "form-control")
-        };
+        TagHelperAttributeList inputAttrs = [new("asp-for", model), new("class", "form-control")];
 
         // se tra le annotazioni del campo c'è un autocomplete lo aggiunge
         ResetPasswordAnnotationsAttribute? annotations = GetDataModelPropertyAttribute<ResetPasswordAnnotationsAttribute>(model);
         if (annotations != null && annotations.Autocomplete != null)
         {
-            inputAttrs.Add(new TagHelperAttribute("autocomplete", annotations.Autocomplete));
+            inputAttrs.Add("autocomplete", annotations.Autocomplete);
         }
 
         // capire in che occasione devo aggiungere l'aria-requided
         //if (annotations != null && annotations.Autocomplete != null)
         //{
         //    // aggiungo la stringa true invece del boolean perché altrimenti verrebbe scritto con la T maiuscola
-        //    inputAttrs.Add(new TagHelperAttribute("aria-required", "true"));
+        //    inputAttrs.Add("aria-required", "true");
         //}
 
         if (Framework == UIFramework.Bootstrap4)
@@ -351,9 +332,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
     private async Task AppendSelectElement(ModelExpression model, IList<SelectListItem> items, string? group, bool visible, TagHelperContext context, TagHelperOutput output)
     {
         // crea la lista degli attributi da aggiungere all'input
-        TagHelperAttributeList selectAttrs = new() {
-            new TagHelperAttribute("asp-for", model)
-        };
+        TagHelperAttributeList selectAttrs = [new("asp-for", model)];
 
         if (Framework == UIFramework.Bootstrap4)
         {
@@ -369,7 +348,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
             // aggiunge il select
             output.Content.AppendHtml($"{Environment.NewLine}    ");
-            selectAttrs.Add(new TagHelperAttribute("class", "form-control"));
+            selectAttrs.Add("class", "form-control");
             await AppendSelectTagHelper(model, items, selectAttrs, context, output).ConfigureAwait(false);
 
             // chiude il div iniziale
@@ -384,7 +363,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
 
             // aggiunge il select
             output.Content.AppendHtml($"{Environment.NewLine}    ");
-            selectAttrs.Add(new TagHelperAttribute("class", "form-select"));
+            selectAttrs.Add("class", "form-select");
             await AppendSelectTagHelper(model, items, selectAttrs, context, output).ConfigureAwait(false);
 
             // aggiunge il label
@@ -403,7 +382,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
         TagHelperContext context = new(new TagHelperAttributeList(allAttributes), items, "");
 
         // creo una lista di attributi da non copiare nell'elemento d'uscita
-        List<string> toRemove = new();
+        List<string> toRemove = [];
 
         // scorro tutte le proprieta del tagHelper per vedere con che nome possono essere inserite nell'elemento d'ingresso
         foreach (var prop in tagHelper.GetType().GetProperties())
@@ -423,7 +402,7 @@ public class ResetPasswordServicesTagHelper : TagHelper
         }
 
         // scorro tutte gli attributi passati in ingresso per vedere quali devo copiare in uscita
-        var outAttrs = new TagHelperAttributeList();
+        TagHelperAttributeList outAttrs = [];
         foreach (var attr in allAttributes)
         {
             bool toAdd = true;

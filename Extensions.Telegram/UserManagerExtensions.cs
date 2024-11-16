@@ -124,15 +124,15 @@ namespace Boa.Identity.Telegram
 
             if (user == null && askToRegister && botClient != null)
             {
-                IStringLocalizer localizer = new IdentityStringLocalizer(services, "Boa.Identity.ResetPasswordService");
+                IdentityStringLocalizer localizer = new(services, "Boa.Identity.ResetPasswordService");
 
-                var msg = await botClient.SendTextMessageAsync(
+                var msg = await botClient.SendMessage(
                     chatId: telegramId,
                     text: localizer["Unknown user!\r\nPlease post your contact card to be identified"],
-                    replyMarkup: new ReplyKeyboardMarkup(new KeyboardButton[][] {
+                    replyMarkup: new ReplyKeyboardMarkup([
                         [ KeyboardButton.WithRequestContact(localizer["Send\r\nCONTACT CARD"]) ],
                         [ new KeyboardButton(localizer["Cancel"]) ]
-                    })
+                    ])
                 ).ConfigureAwait(false);
 
                 // save messageid to check response from user

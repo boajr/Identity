@@ -179,7 +179,7 @@ public class TelegramUserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The telegram token if it exists.</returns>
     protected virtual Task<TTelegramToken?> FindTelegramTokenAsync(long telegramId, string loginProvider, string name, CancellationToken cancellationToken)
-        => TelegramTokens.FindAsync(new object[] { telegramId, loginProvider, name }, cancellationToken).AsTask();
+        => TelegramTokens.FindAsync([telegramId, loginProvider, name], cancellationToken).AsTask();
 
     /// <summary>
     /// Add a new user token.

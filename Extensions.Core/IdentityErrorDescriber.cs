@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Localization;
 
 namespace Boa.Identity
 {
     public class IdentityErrorDescriber : Microsoft.AspNetCore.Identity.IdentityErrorDescriber
     {
-        private readonly IStringLocalizer _localizer;
+        private readonly IdentityStringLocalizer _localizer;
 
         public IdentityErrorDescriber(IServiceProvider serviceProvider)
         {
-            _localizer = new IdentityStringLocalizer(serviceProvider, "Microsoft.AspNetCore.Identity.IdentityErrorDescriber");
+            _localizer = new(serviceProvider, "Microsoft.AspNetCore.Identity.IdentityErrorDescriber");
         }
 
 

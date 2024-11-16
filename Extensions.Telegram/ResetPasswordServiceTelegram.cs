@@ -65,13 +65,13 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
         {
             try
             {
-                await _botClient.DeleteMessageAsync(telegramId, msgId).ConfigureAwait(false);
+                await _botClient.DeleteMessage(telegramId, msgId).ConfigureAwait(false);
             }
             catch (ApiRequestException) { }
         }
 
         // send message to user Telegram Chat
-        var msg = await _botClient.SendTextMessageAsync(
+        var msg = await _botClient.SendMessage(
             chatId: telegramId,
             text: Localizer["Reply to this message with new password"],
             replyMarkup: new ForceReplyMarkup()

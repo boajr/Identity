@@ -38,7 +38,7 @@ public class User2FAServiceWithTelegram<TUser> : User2FAServiceWithTokenProvider
             return Send2FATokenResult.Failed;
         }
 
-        await _botClient.SendTextMessageAsync(
+        await _botClient.SendMessage(
             chatId: telegramId,
             text: Localizer["Please, to authenticate use this code {0}", token]
         ).ConfigureAwait(false);
