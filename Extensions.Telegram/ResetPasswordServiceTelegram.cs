@@ -18,7 +18,7 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
     where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
-    private readonly ITelegramBotClient _botClient;
+    private readonly TelegramBotService.TelegramBotService _botService;
 
     public sealed override string ServiceName => "Telegram";
 
@@ -31,15 +31,21 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
     public ResetPasswordServiceTelegram(IServiceProvider serviceProvider,
                                         IObjectModelValidator modelValidator,
                                         UserManager<TUser> userManager,
-                                        Boa.TelegramBotService.TelegramBotService botClient)
+                                        TelegramBotService.TelegramBotService botService)
         : base(serviceProvider, modelValidator)
     {
         _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-        _botClient = botClient ?? throw new ArgumentNullException(nameof(botClient));
+        _botService = botService ?? throw new ArgumentNullException(nameof(botService));
     }
 
     protected override async Task<bool> ProcessAsync(ResetPasswordServiceTelegramDataModel data)
     {
+        if (_botService.BotClient == null)
+        {
+            ModelState.AddModelError(string.Empty, "TelegramBotService isn't initialized.");
+            return false;
+        }
+
         if (!ModelState.IsValid)
         {
             return false;
@@ -65,13 +71,13 @@ internal sealed class ResetPasswordServiceTelegram<TUser> : ResetPasswordService
         {
             try
             {
-                await _botClient.DeleteMessage(telegramId, msgId).ConfigureAwait(false);
+                await _botService.BotClient.DeleteMessage(telegramId, msgId).ConfigureAwait(false);
             }
             catch (ApiRequestException) { }
         }
 
         // send message to user Telegram Chat
-        var msg = await _botClient.SendMessage(
+        var msg = await _botService.BotClient.SendMessage(
             chatId: telegramId,
             text: Localizer["Reply to this message with new password"],
             replyMarkup: new ForceReplyMarkup()

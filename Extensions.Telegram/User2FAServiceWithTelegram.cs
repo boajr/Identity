@@ -7,12 +7,12 @@ namespace Boa.Identity.Telegram;
 public class User2FAServiceWithTelegram<TUser> : User2FAServiceWithTokenProvider<TUser>
     where TUser : class
 {
-    private readonly TelegramBotService.TelegramBotService _botClient;
+    private readonly TelegramBotService.TelegramBotService _botService;
 
-    public User2FAServiceWithTelegram(IServiceProvider serviceProvider, IConfiguration configuration, TelegramBotService.TelegramBotService botClient)
+    public User2FAServiceWithTelegram(IServiceProvider serviceProvider, IConfiguration configuration, TelegramBotService.TelegramBotService botService)
         : base(serviceProvider, configuration, "Telegram")
     {
-        _botClient = botClient ?? throw new ArgumentNullException(nameof(botClient));
+        _botService = botService ?? throw new ArgumentNullException(nameof(botService));
     }
 
     public override string RequestMessage => @"An authentication code was sent to your telegram account. Enter that code below";
@@ -33,12 +33,12 @@ public class User2FAServiceWithTelegram<TUser> : User2FAServiceWithTokenProvider
     protected override async Task<Send2FATokenResult> ProcessSendTokenAsync(string token, UserManager<TUser> manager, TUser user)
     {
         long? telegramId = await manager.GetTelegramIdAsync(user).ConfigureAwait(false);
-        if (telegramId == null)
+        if (telegramId == null || _botService.BotClient == null)
         {
             return Send2FATokenResult.Failed;
         }
 
-        await _botClient.SendMessage(
+        await _botService.BotClient.SendMessage(
             chatId: telegramId,
             text: Localizer["Please, to authenticate use this code {0}", token]
         ).ConfigureAwait(false);
